@@ -1,1 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdAgentOS - AI Performance Analyst</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    /* Custom scrollbar for webkit browsers */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #e5e5e5;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d4d4d4;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+    const { Settings, Send, Sparkles, Database, TrendingUp, ChevronRight } = lucide;
 
+    const AdAgentOS = () => {
+      const [messages, setMessages] = useState([
+        { role: 'assistant', content: 'Hello! I\'m your AI performance analyst. Ask me about your video ad campaigns.' }
+      ]);
+      const [input, setInput] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [showAgents, setShowAgents] = useState(false);
+      const [activeAgent, setActiveAgent] = useState(null);
+      const messagesEndRef = useRef(null);
+
+      const [agentPrompts, setAgentPrompts] = useState({
+        dataAgent: `You are a data retrieval specialist. Your role is to:
+- Parse user intent and identify relevant metrics
+- Generate appropriate SQL queries for video ad performance data
+- Return structured, clean data for analysis`,
+        
+        analysisAgent: `You are a performance analysis expert. Your role is to:
+- Identify key patterns and anomalies in ad performance
+- Calculate important ratios (ROAS, CTR, CPA)
+- Surface the most significant insights from the data`,
+        
+        optimizationAgent: `You are a marketing optimization specialist. Your role is to:
+- Generate specific, actionable recommendations
+- Prioritize changes by potential impact
+- Suggest budget reallocations with exact percentages
+- Focus on ROI improvement opportunities`
+      });
+
+      const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      useEffect(() => {
+        scrollToBottom();
+      }, [messages]);
+
+      const handleSend = async () => {
+        if (!input.trim()) return;
+
+        const userMessage = input;
+        setInput('');
+        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        setIsLoading(true);
+
+        try {
+          // Replace with your Railway backend URL when deployed
+          const response = await fetch('adagentos-production.up.railway.app', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              message: userMessage,
+              agentPrompts 
+            })
+          });
+
+          const data = await response.json();
+          setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content: data.message,
+            metrics: data.metrics 
+          }]);
+        } catch (error) {
+          setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content: 'I\'m having trouble connecting to the backend. Please make sure the server is running.' 
+          }]);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      };
+
+      const updatePrompt = (agent, value) => {
+        setAgentPrompts(prev => ({
+          ...prev,
+          [agent]: value
+        }));
+      };
+
+      const agentIcons = {
+        dataAgent: React.createElement(Database, { className: "w-4 h-4" }),
+        analysisAgent: React.createElement(TrendingUp, { className: "w-4 h-4" }),
+        optimizationAgent: React.createElement(Sparkles, { className: "w-4 h-4" })
+      };
+
+      const agentNames = {
+        dataAgent: 'Data Agent',
+        analysisAgent: 'Analysis Agent',
+        optimizationAgent: 'Optimization Agent'
+      };
+
+      return React.createElement('div', { className: 'flex h-screen bg-white' },
+        // Main Chat Area
+        React.createElement('div', { className: 'flex-1 flex flex-col' },
+          // Header
+          React.createElement('div', { className: 'border-b border-gray-100 px-8 py-6' },
+            React.createElement('div', { className: 'flex items-center justify-between' },
+              React.createElement('div', null,
+                React.createElement('h1', { className: 'text-2xl font-light text-gray-900' }, 'AdAgentOS'),
+                React.createElement('p', { className: 'text-sm text-gray-500 mt-1' }, 'AI Performance Analyst')
+              ),
+              React.createElement('button', {
+                onClick: () => setShowAgents(!showAgents),
+                className: 'p-2 hover:bg-gray-50 rounded-lg transition-colors'
+              }, React.createElement(Settings, { className: 'w-5 h-5 text-gray-600' }))
+            )
+          ),
+
+          // Messages
+          React.createElement('div', { className: 'flex-1 overflow-y-auto px-8 py-6' },
+            React.createElement('div', { className: 'max-w-3xl mx-auto space-y-6' },
+              messages.map((message, idx) => 
+                React.createElement('div', { 
+                  key: idx, 
+                  className: `flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}` 
+                },
+                  React.createElement('div', { 
+                    className: `max-w-xl ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} rounded-2xl px-6 py-4` 
+                  },
+                    React.createElement('p', { className: 'text-sm leading-relaxed whitespace-pre-wrap' }, message.content),
+                    message.metrics && React.createElement('div', { className: 'mt-4 pt-4 border-t border-gray-200' },
+                      React.createElement('pre', { className: 'text-xs bg-white rounded-lg p-3 overflow-x-auto' },
+                        JSON.stringify(message.metrics, null, 2)
+                      )
+                    )
+                  )
+                )
+              ),
+              isLoading && React.createElement('div', { className: 'flex justify-start' },
+                React.createElement('div', { className: 'bg-gray-50 rounded-2xl px-6 py-4' },
+                  React.createElement('div', { className: 'flex space-x-2' },
+                    React.createElement('div', { className: 'w-2 h-2 bg-gray-400 rounded-full animate-bounce', style: { animationDelay: '0ms' } }),
+                    React.createElement('div', { className: 'w-2 h-2 bg-gray-400 rounded-full animate-bounce', style: { animationDelay: '150ms' } }),
+                    React.createElement('div', { className: 'w-2 h-2 bg-gray-400 rounded-full animate-bounce', style: { animationDelay: '300ms' } })
+                  )
+                )
+              ),
+              React.createElement('div', { ref: messagesEndRef })
+            )
+          ),
+
+          // Input
+          React.createElement('div', { className: 'border-t border-gray-100 px-8 py-6' },
+            React.createElement('div', { className: 'max-w-3xl mx-auto' },
+              React.createElement('div', { className: 'flex items-end space-x-4' },
+                React.createElement('div', { className: 'flex-1' },
+                  React.createElement('textarea', {
+                    value: input,
+                    onChange: (e) => setInput(e.target.value),
+                    onKeyPress: handleKeyPress,
+                    placeholder: 'Ask about campaign performance...',
+                    className: 'w-full px-4 py-3 bg-gray-50 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all',
+                    rows: '1',
+                    style: { minHeight: '48px', maxHeight: '120px' }
+                  })
+                ),
+                React.createElement('button', {
+                  onClick: handleSend,
+                  disabled: isLoading || !input.trim(),
+                  className: 'p-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
+                }, React.createElement(Send, { className: 'w-5 h-5' }))
+              ),
+              React.createElement('div', { className: 'mt-3 flex space-x-6 text-xs text-gray-400' },
+                React.createElement('span', null, 'Try: "Give me a cross channel summary for October"'),
+                React.createElement('span', null, '•'),
+                React.createElement('span', null, '"Which platform had the best ROAS?"')
+              )
+            )
+          )
+        ),
+
+        // Agent Panel
+        React.createElement('div', { 
+          className: `${showAgents ? 'w-96' : 'w-0'} transition-all duration-300 overflow-hidden border-l border-gray-100 bg-gray-50` 
+        },
+          React.createElement('div', { className: 'p-6' },
+            React.createElement('h2', { className: 'text-lg font-light mb-6' }, 'Agent Configuration'),
+            
+            React.createElement('div', { className: 'space-y-4' },
+              Object.entries(agentPrompts).map(([agent, prompt]) =>
+                React.createElement('div', { 
+                  key: agent,
+                  className: 'bg-white rounded-xl p-4 border border-gray-100'
+                },
+                  React.createElement('button', {
+                    onClick: () => setActiveAgent(activeAgent === agent ? null : agent),
+                    className: 'w-full flex items-center justify-between mb-3'
+                  },
+                    React.createElement('div', { className: 'flex items-center space-x-2' },
+                      agentIcons[agent],
+                      React.createElement('span', { className: 'text-sm font-medium' }, agentNames[agent])
+                    ),
+                    React.createElement(ChevronRight, { 
+                      className: `w-4 h-4 transition-transform ${activeAgent === agent ? 'rotate-90' : ''}` 
+                    })
+                  ),
+                  
+                  activeAgent === agent && React.createElement('textarea', {
+                    value: prompt,
+                    onChange: (e) => updatePrompt(agent, e.target.value),
+                    className: 'w-full h-32 p-3 text-xs bg-gray-50 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-200'
+                  })
+                )
+              )
+            ),
+
+            React.createElement('div', { className: 'mt-8 p-4 bg-white rounded-xl border border-gray-100' },
+              React.createElement('p', { className: 'text-xs text-gray-500' },
+                'Agent prompts are sent with each request to guide the AI\'s behavior. Modify them to adjust how each agent processes and responds to data.'
+              )
+            )
+          )
+        )
+      );
+    };
+
+    ReactDOM.render(React.createElement(AdAgentOS), document.getElementById('root'));
+  </script>
+</body>
+</html>
