@@ -13,6 +13,16 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: #e5e5e5; border-radius: 3px; }
+    .sql-code {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      white-space: pre;
+    }
   </style>
 </head>
 <body>
@@ -22,26 +32,49 @@
     const { useState, useRef, useEffect } = React;
 
     function formatText(text) {
-  // Simple markdown-like formatting
-  return text
-    .replace(/### (.*?)$/gm, '<h3 class="font-semibold text-lg mb-2 mt-4">$1</h3>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-    .replace(/• /g, '')  // Remove bullet dots
-    .replace(/- (.*?)$/gm, '<div class="ml-4 mb-1">→ $1</div>')  // Better bullets
-    .replace(/\d+\. (.*?)$/gm, '<div class="ml-4 mb-2 font-medium">$&</div>')  // Numbered lists
-    .replace(/\n/g, '<br/>');
-}
+      // Simple markdown-like formatting
+      return text
+        .replace(/### (.*?)$/gm, '<h3 class="font-semibold text-lg mb-2 mt-4">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+        .replace(/• /g, '')
+        .replace(/- (.*?)$/gm, '<div class="ml-4 mb-1">→ $1</div>')
+        .replace(/\d+\. (.*?)$/gm, '<div class="ml-4 mb-2 font-medium">$&</div>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function CollapsibleSQL({ sql }) {
+      const [isExpanded, setIsExpanded] = useState(false);
+
+      if (!sql) return null;
+
+      return (
+        <div className="mb-3 mt-2">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <span>{isExpanded ? '▼' : '▶'}</span>
+            <span className="font-medium">View SQL Query</span>
+          </button>
+          {isExpanded && (
+            <div className="mt-2 sql-code">
+              {sql}
+            </div>
+          )}
+        </div>
+      );
+    }
 
     function MetricsDisplay({ metrics }) {
       if (!metrics || Object.keys(metrics).length === 0) return null;
 
       const platforms = Object.keys(metrics);
-      const totalSpend = Object.values(metrics).reduce((sum, m) => sum + m.spend, 0);
-      const totalRevenue = Object.values(metrics).reduce((sum, m) => sum + m.revenue, 0);
-      const overallROAS = (totalRevenue / totalSpend).toFixed(2);
-      const totalConversions = Object.values(metrics).reduce((sum, m) => sum + m.conversions, 0);
+      const totalSpend = Object.values(metrics).reduce((sum, m) => sum + (m.spend || 0), 0);
+      const totalRevenue = Object.values(metrics).reduce((sum, m) => sum + (m.revenue || 0), 0);
+      const overallROAS = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : 0;
+      const totalConversions = Object.values(metrics).reduce((sum, m) => sum + (m.conversions || 0), 0);
 
-      const maxROAS = Math.max(...platforms.map(p => metrics[p].roas));
+      const maxROAS = Math.max(...platforms.map(p => metrics[p].roas || 0));
       const colors = {
         TikTok: '#000000',
         Instagram: '#E4405F', 
@@ -75,7 +108,7 @@
         React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
           React.createElement('h3', { className: 'text-sm font-medium mb-4' }, 'Return on Ad Spend (ROAS)'),
           React.createElement('div', { className: 'space-y-3' },
-            platforms.sort((a,b) => metrics[b].roas - metrics[a].roas).map(platform =>
+            platforms.sort((a,b) => (metrics[b].roas || 0) - (metrics[a].roas || 0)).map(platform =>
               React.createElement('div', { key: platform, className: 'flex items-center' },
                 React.createElement('div', { className: 'w-20 text-sm' }, platform),
                 React.createElement('div', { className: 'flex-1 mx-3' },
@@ -83,10 +116,10 @@
                     React.createElement('div', {
                       className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs text-white font-medium',
                       style: {
-                        width: (metrics[platform].roas / maxROAS * 100) + '%',
-                        backgroundColor: colors[platform]
+                        width: ((metrics[platform].roas || 0) / maxROAS * 100) + '%',
+                        backgroundColor: colors[platform] || '#666'
                       }
-                    }, metrics[platform].roas + 'x')
+                    }, (metrics[platform].roas || 0) + 'x')
                   )
                 )
               )
@@ -105,17 +138,17 @@
                   React.createElement('div', { className: 'text-xs w-12' }, 'Spend'),
                   React.createElement('div', { 
                     className: 'h-4 bg-red-500 rounded',
-                    style: { width: (metrics[platform].spend / totalSpend * 200) + 'px' }
+                    style: { width: ((metrics[platform].spend || 0) / totalSpend * 200) + 'px' }
                   }),
-                  React.createElement('div', { className: 'text-xs' }, '$' + (metrics[platform].spend/1000).toFixed(0) + 'k')
+                  React.createElement('div', { className: 'text-xs' }, '$' + ((metrics[platform].spend || 0)/1000).toFixed(0) + 'k')
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center mt-1' },
                   React.createElement('div', { className: 'text-xs w-12' }, 'Rev'),
                   React.createElement('div', { 
                     className: 'h-4 bg-green-500 rounded',
-                    style: { width: (metrics[platform].revenue / totalRevenue * 200) + 'px' }
+                    style: { width: ((metrics[platform].revenue || 0) / totalRevenue * 200) + 'px' }
                   }),
-                  React.createElement('div', { className: 'text-xs' }, '$' + (metrics[platform].revenue/1000).toFixed(0) + 'k')
+                  React.createElement('div', { className: 'text-xs' }, '$' + ((metrics[platform].revenue || 0)/1000).toFixed(0) + 'k')
                 )
               )
             )
@@ -131,13 +164,11 @@
       const [input, setInput] = useState('');
       const [isLoading, setIsLoading] = useState(false);
       const [showAgents, setShowAgents] = useState(false);
-      const [activeAgent, setActiveAgent] = useState(null);
       const messagesEndRef = useRef(null);
 
       const [agentPrompts, setAgentPrompts] = useState({
-        dataAgent: 'You are a data retrieval specialist. Parse user intent and generate SQL queries.',
-        analysisAgent: 'You are a performance analysis expert. Calculate ROAS, CTR, CPA metrics.',
-        optimizationAgent: 'You are a marketing optimization specialist. Generate actionable recommendations.'
+        queryGeneratorAgent: 'You are an expert SQL query generator for marketing analytics. Generate safe, efficient PostgreSQL queries based on user questions.',
+        answerGeneratorAgent: 'You are a marketing performance analyst. Provide specific, data-driven insights with exact numbers from the query results.'
       });
 
       const scrollToBottom = () => {
@@ -169,7 +200,8 @@
           const data = await response.json();
           setMessages(prev => [...prev, { 
             role: 'assistant', 
-            content: data.message || 'No response received',
+            content: data.answer || 'No response received',
+            sql: data.sql,
             metrics: data.metrics 
           }]);
         } catch (error) {
@@ -216,10 +248,13 @@
                     },
                       message.role === 'user' 
                         ? React.createElement('p', { className: 'text-sm' }, message.content)
-                        : React.createElement('div', { 
-                            className: 'text-sm',
-                            dangerouslySetInnerHTML: { __html: formatText(message.content) }
-                          })
+                        : React.createElement('div', null,
+                            message.sql && React.createElement(CollapsibleSQL, { sql: message.sql }),
+                            React.createElement('div', { 
+                              className: 'text-sm',
+                              dangerouslySetInnerHTML: { __html: formatText(message.content) }
+                            })
+                          )
                     )
                   ),
                   message.metrics && React.createElement(MetricsDisplay, { metrics: message.metrics })
@@ -258,7 +293,9 @@
           React.createElement('h2', { className: 'text-lg font-light mb-6' }, 'Agent Configuration'),
           Object.entries(agentPrompts).map(([agent, prompt]) =>
             React.createElement('div', { key: agent, className: 'mb-4 bg-white rounded-xl p-4' },
-              React.createElement('div', { className: 'text-sm font-medium mb-2' }, agent),
+              React.createElement('div', { className: 'text-sm font-medium mb-2' }, 
+                agent === 'queryGeneratorAgent' ? '🔍 Query Generator' : '💡 Answer Generator'
+              ),
               React.createElement('textarea', {
                 value: prompt,
                 onChange: (e) => setAgentPrompts(prev => ({...prev, [agent]: e.target.value})),
