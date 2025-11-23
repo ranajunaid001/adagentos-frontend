@@ -32,7 +32,6 @@
     const { useState, useRef, useEffect } = React;
 
     function formatText(text) {
-      // Simple markdown-like formatting
       return text
         .replace(/### (.*?)$/gm, '<h3 class="font-semibold text-lg mb-2 mt-4">$1</h3>')
         .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
@@ -65,23 +64,42 @@
       );
     }
 
-    function MetricsDisplay({ metrics }) {
-      if (!metrics || Object.keys(metrics).length === 0) return null;
+    function DynamicVisualization({ visualization }) {
+      if (!visualization || visualization.type !== 'comparison') return null;
 
-      const platforms = Object.keys(metrics);
-      const totalSpend = Object.values(metrics).reduce((sum, m) => sum + (m.spend || 0), 0);
-      const totalRevenue = Object.values(metrics).reduce((sum, m) => sum + (m.revenue || 0), 0);
+      const { dimension, data } = visualization;
+      const items = Object.keys(data);
+      
+      // Calculate totals
+      const totalSpend = Object.values(data).reduce((sum, d) => sum + (d.spend || 0), 0);
+      const totalRevenue = Object.values(data).reduce((sum, d) => sum + (d.revenue || 0), 0);
       const overallROAS = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : 0;
-      const totalConversions = Object.values(metrics).reduce((sum, m) => sum + (m.conversions || 0), 0);
+      const totalConversions = Object.values(data).reduce((sum, d) => sum + (d.conversions || 0), 0);
 
-      const maxROAS = Math.max(...platforms.map(p => metrics[p].roas || 0));
-      const colors = {
-        TikTok: '#000000',
-        Instagram: '#E4405F', 
-        Facebook: '#1877F2',
-        YouTube: '#FF0000',
-        Snapchat: '#FFFC00'
+      const maxROAS = Math.max(...items.map(item => data[item].roas || 0));
+
+      // Color mapping for platforms (adapt for other dimensions with defaults)
+      const platformColors = {
+        TikTok: { bg: '#000000', text: '#FFFFFF' },
+        Instagram: { bg: '#E4405F', text: '#FFFFFF' },
+        Facebook: { bg: '#1877F2', text: '#FFFFFF' },
+        YouTube: { bg: '#FF0000', text: '#FFFFFF' },
+        Snapchat: { bg: '#FFFC00', text: '#000000' }
       };
+
+      const getColor = (item) => {
+        if (dimension === 'platform' && platformColors[item]) {
+          return platformColors[item];
+        }
+        // Default colors for other dimensions
+        const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+        const index = items.indexOf(item) % colors.length;
+        return { bg: colors[index], text: '#FFFFFF' };
+      };
+
+      // Capitalize dimension name for display
+      const dimensionLabel = dimension === 'age_group' ? 'Age Group' : 
+                           dimension.charAt(0).toUpperCase() + dimension.slice(1);
 
       return React.createElement('div', { className: 'mt-4 space-y-6' },
         // Summary Cards
@@ -106,24 +124,26 @@
 
         // ROAS Chart
         React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
-          React.createElement('h3', { className: 'text-sm font-medium mb-4' }, 'Return on Ad Spend (ROAS)'),
+          React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Return on Ad Spend by ${dimensionLabel}`),
           React.createElement('div', { className: 'space-y-3' },
-            platforms.sort((a,b) => (metrics[b].roas || 0) - (metrics[a].roas || 0)).map(platform =>
-              React.createElement('div', { key: platform, className: 'flex items-center' },
-                React.createElement('div', { className: 'w-20 text-sm' }, platform),
+            items.sort((a, b) => (data[b].roas || 0) - (data[a].roas || 0)).map(item => {
+              const colors = getColor(item);
+              return React.createElement('div', { key: item, className: 'flex items-center' },
+                React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
                 React.createElement('div', { className: 'flex-1 mx-3' },
                   React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
                     React.createElement('div', {
-                      className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs text-white font-medium',
+                      className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
                       style: {
-                        width: ((metrics[platform].roas || 0) / maxROAS * 100) + '%',
-                        backgroundColor: colors[platform] || '#666'
+                        width: ((data[item].roas || 0) / maxROAS * 100) + '%',
+                        backgroundColor: colors.bg,
+                        color: colors.text
                       }
-                    }, (metrics[platform].roas || 0) + 'x')
+                    }, (data[item].roas || 0) + 'x')
                   )
                 )
-              )
-            )
+              );
+            })
           )
         ),
 
@@ -131,24 +151,24 @@
         React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
           React.createElement('h3', { className: 'text-sm font-medium mb-4' }, 'Spend vs Revenue'),
           React.createElement('div', { className: 'space-y-3' },
-            platforms.map(platform =>
-              React.createElement('div', { key: platform },
-                React.createElement('div', { className: 'text-sm mb-1' }, platform),
+            items.map(item =>
+              React.createElement('div', { key: item },
+                React.createElement('div', { className: 'text-sm mb-1 truncate' }, item),
                 React.createElement('div', { className: 'flex gap-2 items-center' },
                   React.createElement('div', { className: 'text-xs w-12' }, 'Spend'),
                   React.createElement('div', { 
                     className: 'h-4 bg-red-500 rounded',
-                    style: { width: ((metrics[platform].spend || 0) / 1000) + 'px' }
+                    style: { width: ((data[item].spend || 0) / 1000) + 'px', maxWidth: '300px' }
                   }),
-                  React.createElement('div', { className: 'text-xs' }, '$' + ((metrics[platform].spend || 0)/1000).toFixed(0) + 'k')
+                  React.createElement('div', { className: 'text-xs' }, '$' + ((data[item].spend || 0)/1000).toFixed(0) + 'k')
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center mt-1' },
                   React.createElement('div', { className: 'text-xs w-12' }, 'Rev'),
                   React.createElement('div', { 
                     className: 'h-4 bg-green-500 rounded',
-                    style: { width: ((metrics[platform].revenue || 0) / 1000) + 'px' }
+                    style: { width: ((data[item].revenue || 0) / 1000) + 'px', maxWidth: '300px' }
                   }),
-                  React.createElement('div', { className: 'text-xs' }, '$' + ((metrics[platform].revenue || 0)/1000).toFixed(0) + 'k')
+                  React.createElement('div', { className: 'text-xs' }, '$' + ((data[item].revenue || 0)/1000).toFixed(0) + 'k')
                 )
               )
             )
@@ -202,7 +222,7 @@
             role: 'assistant', 
             content: data.answer || 'No response received',
             sql: data.sql,
-            metrics: data.metrics 
+            visualization: data.visualization
           }]);
         } catch (error) {
           console.error('Error:', error);
@@ -257,7 +277,7 @@
                           )
                     )
                   ),
-                  message.metrics && React.createElement(MetricsDisplay, { metrics: message.metrics })
+                  message.visualization && React.createElement(DynamicVisualization, { visualization: message.visualization })
                 )
               ),
               isLoading && React.createElement('div', { className: 'flex justify-start' },
