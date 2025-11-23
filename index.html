@@ -38,7 +38,7 @@
         .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
         .replace(/• /g, '')
         .replace(/- (.*?)$/gm, '<div class="ml-4 mb-1">→ $1</div>')
-        .replace(/\d+\. (.*?)$/gm, '<div class="ml-4 mb-2 font-medium">$&</div>')
+        .replace(/^\d+\. (.*?)$/gm, '<div class="ml-4 mb-2 font-medium">$&</div>')
         .replace(/\n/g, '<br/>');
     }
 
