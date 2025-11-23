@@ -138,7 +138,7 @@
                   React.createElement('div', { className: 'text-xs w-12' }, 'Spend'),
                   React.createElement('div', { 
                     className: 'h-4 bg-red-500 rounded',
-                    style: { width: ((metrics[platform].spend || 0) / totalSpend * 200) + 'px' }
+                    style: { width: ((metrics[platform].spend || 0) / 1000) + 'px' }
                   }),
                   React.createElement('div', { className: 'text-xs' }, '$' + ((metrics[platform].spend || 0)/1000).toFixed(0) + 'k')
                 ),
@@ -146,7 +146,7 @@
                   React.createElement('div', { className: 'text-xs w-12' }, 'Rev'),
                   React.createElement('div', { 
                     className: 'h-4 bg-green-500 rounded',
-                    style: { width: ((metrics[platform].revenue || 0) / totalRevenue * 200) + 'px' }
+                    style: { width: ((metrics[platform].revenue || 0) / 1000) + 'px' }
                   }),
                   React.createElement('div', { className: 'text-xs' }, '$' + ((metrics[platform].revenue || 0)/1000).toFixed(0) + 'k')
                 )
