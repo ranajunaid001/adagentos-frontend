@@ -676,6 +676,14 @@ function DynamicVisualization({ visualization }) {
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsLoading(true);
 
+        // Extract conversation history (last 5 exchanges)
+        const conversationHistory = messages
+          .slice(-10) // Get last 10 messages (5 user + 5 assistant pairs)
+          .map(msg => ({
+            role: msg.role,
+            content: msg.content // Just the text, no SQL or visualizations
+          }));
+
         // Start thinking message progression
         const thinkingStages = getThinkingMessages(userMessage);
         let stageIndex = 0;
