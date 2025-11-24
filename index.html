@@ -753,14 +753,20 @@ function DynamicVisualization({ visualization }) {
       };
 
       return React.createElement('div', { className: 'flex h-screen bg-white' },
-        // Add config button in top right
+          // Add config and docs buttons in top right
         React.createElement('div', { 
           style: { position: 'absolute', top: '20px', right: '20px', zIndex: 10 } 
         },
-          React.createElement('button', {
-            onClick: handleConfigClick,
-            className: 'px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors'
-          }, 'Agent Config')
+          React.createElement('div', { className: 'flex gap-3' },
+            React.createElement('button', {
+              onClick: () => window.location.href = 'docs.html',
+              className: 'px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors'
+            }, 'Docs'),
+            React.createElement('button', {
+              onClick: handleConfigClick,
+              className: 'px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors'
+            }, 'Agent Config')
+          )
         ),
         
         // Password Modal
