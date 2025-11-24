@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - AdAgentOS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .doc-content h2 { 
+      font-size: 28px; 
+      font-weight: 600; 
+      margin-top: 40px; 
+      margin-bottom: 20px;
+      color: #1a1a1a;
+    }
+    .doc-content h3 { 
+      font-size: 20px; 
+      font-weight: 600; 
+      margin-top: 24px; 
+      margin-bottom: 12px;
+      color: #374151;
+    }
+    .doc-content p { 
+      line-height: 1.7; 
+      margin-bottom: 16px;
+      color: #4b5563;
+    }
+    .doc-content ul { 
+      margin-bottom: 16px; 
+      margin-left: 0;
+    }
+    .doc-content li { 
+      margin-bottom: 8px;
+      color: #4b5563;
+      list-style: none;
+      padding-left: 24px;
+      position: relative;
+    }
+    .doc-content li:before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: #6b7280;
+    }
+    .example-box {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+    .highlight {
+      background: #fef3c7;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <a href="index.html" class="text-gray-600 hover:text-gray-900 mr-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </a>
+          <h1 class="text-xl font-semibold text-gray-900">AdAgentOS Documentation</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 doc-content">
+      
+      <!-- Introduction -->
+      <h1 class="text-3xl font-bold mb-6">Welcome to AdAgentOS</h1>
+      <p class="text-lg text-gray-600 mb-8">
+        AdAgentOS is your AI-powered marketing analyst that helps you understand and optimize your video ad campaigns across all major platforms. Just ask questions in plain English, and get instant insights with actionable recommendations.
+      </p>
+
+      <!-- What You Can Do -->
+      <h2>What You Can Do</h2>
+      
+      <h3>📊 Analyze Performance</h3>
+      <p>Get instant insights about how your ads are performing:</p>
+      <ul>
+        <li>See which platforms give you the best return on investment (ROAS)</li>
+        <li>Find out where your money is being spent most effectively</li>
+        <li>Discover which audiences are converting best</li>
+        <li>Track video completion rates and engagement</li>
+      </ul>
+
+      <h3>💰 Optimize Your Budget</h3>
+      <p>Make smarter decisions about where to invest:</p>
+      <ul>
+        <li>Get recommendations on where to add more budget</li>
+        <li>Identify underperforming segments to cut</li>
+        <li>Reallocate budget for maximum impact</li>
+        <li>See projected outcomes before making changes</li>
+      </ul>
+
+      <h3>🎯 Compare Segments</h3>
+      <p>Understand performance across different dimensions:</p>
+      <ul>
+        <li><strong>Platforms:</strong> TikTok, Facebook, Instagram, YouTube, Snapchat</li>
+        <li><strong>Regions:</strong> Northeast, Midwest, South, West</li>
+        <li><strong>Age Groups:</strong> 18-24, 25-34, 35-44, 45-54, 55-64, 65+</li>
+        <li><strong>Gender:</strong> Male, Female, Unknown</li>
+      </ul>
+
+      <!-- Example Questions -->
+      <h2>Example Questions to Ask</h2>
+      
+      <h3>Performance Questions</h3>
+      <div class="example-box">
+        <p><strong>Try these:</strong></p>
+        <ul>
+          <li>"Which platform has the best ROAS?"</li>
+          <li>"Show me conversion rates by age group"</li>
+          <li>"What's the CTR across all regions?"</li>
+          <li>"Compare TikTok and Instagram performance"</li>
+        </ul>
+      </div>
+
+      <h3>Budget Strategy Questions</h3>
+      <div class="example-box">
+        <p><strong>Try these:</strong></p>
+        <ul>
+          <li>"I have $100k to invest, where should I put it?"</li>
+          <li>"I need to cut $50k from my budget"</li>
+          <li>"How can I optimize my current budget allocation?"</li>
+          <li>"What happens if I move budget from Facebook to TikTok?"</li>
+        </ul>
+      </div>
+
+      <h3>Video Performance Questions</h3>
+      <div class="example-box">
+        <p><strong>Try these:</strong></p>
+        <ul>
+          <li>"Which platform has the highest video completion rate?"</li>
+          <li>"Show me the video engagement funnel"</li>
+          <li>"Compare video performance across age groups"</li>
+        </ul>
+      </div>
+
+      <!-- Understanding Metrics -->
+      <h2>Understanding Your Metrics</h2>
+      
+      <h3>Key Metrics Explained</h3>
+      
+      <p><strong>ROAS (Return on Ad Spend)</strong></p>
+      <ul>
+        <li>How much revenue you get for every dollar spent</li>
+        <li>Example: 5x ROAS = $5 revenue for every $1 spent</li>
+        <li><span class="highlight">Higher is better</span></li>
+      </ul>
+
+      <p><strong>CPA (Cost Per Acquisition)</strong></p>
+      <ul>
+        <li>How much it costs to get one conversion</li>
+        <li>Example: $2.50 CPA = costs $2.50 to get one customer</li>
+        <li><span class="highlight">Lower is better</span></li>
+      </ul>
+
+      <p><strong>CTR (Click-Through Rate)</strong></p>
+      <ul>
+        <li>Percentage of people who click your ad after seeing it</li>
+        <li>Example: 2% CTR = 2 out of 100 people clicked</li>
+        <li><span class="highlight">Higher is better</span></li>
+      </ul>
+
+      <p><strong>Video Completion Rate</strong></p>
+      <ul>
+        <li>Percentage of people who watch your entire video</li>
+        <li>Shows engagement levels at different points (3s, 25%, 50%, 100%)</li>
+        <li><span class="highlight">Higher is better</span></li>
+      </ul>
+
+      <!-- Platform Insights -->
+      <h2>What We Track for Each Platform</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+        <div class="example-box">
+          <h4 class="font-semibold mb-2">Financial Metrics</h4>
+          <ul class="text-sm">
+            <li>Ad Spend</li>
+            <li>Revenue Generated</li>
+            <li>Return on Ad Spend (ROAS)</li>
+            <li>Cost Per Acquisition (CPA)</li>
+          </ul>
+        </div>
+        
+        <div class="example-box">
+          <h4 class="font-semibold mb-2">Engagement Metrics</h4>
+          <ul class="text-sm">
+            <li>Impressions</li>
+            <li>Clicks & CTR</li>
+            <li>Conversions</li>
+            <li>Video Views & Completion</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- How Recommendations Work -->
+      <h2>How Budget Recommendations Work</h2>
+      
+      <h3>When Adding Budget</h3>
+      <p>We use a performance-based allocation strategy:</p>
+      <ul>
+        <li><strong>50%</strong> goes to your top performer</li>
+        <li><strong>30%</strong> goes to your second-best performer</li>
+        <li><strong>20%</strong> is distributed among other segments</li>
+      </ul>
+
+      <h3>When Cutting Budget</h3>
+      <p>We protect your best performers:</p>
+      <ul>
+        <li>Remove budget from lowest ROAS segments first</li>
+        <li>Never cut from profitable segments</li>
+        <li>Show exact impact on revenue before you decide</li>
+      </ul>
+
+      <h3>When Optimizing</h3>
+      <p>We find opportunities to improve:</p>
+      <ul>
+        <li>Move 30-40% from worst to best performers</li>
+        <li>Keep total budget the same</li>
+        <li>Maximize overall ROAS</li>
+      </ul>
+
+      <!-- Tips -->
+      <h2>Pro Tips</h2>
+      
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 my-6">
+        <h3 class="text-blue-900 mb-2">💡 Getting Started</h3>
+        <ul class="text-blue-800 text-sm">
+          <li>Start with "Which platform has the best ROAS?" to understand your winners</li>
+          <li>Then ask "Where should I invest more budget?" for growth opportunities</li>
+          <li>Use "Compare [Platform A] and [Platform B]" for detailed analysis</li>
+          <li>Ask follow-up questions - the AI remembers your conversation!</li>
+        </ul>
+      </div>
+
+      <!-- Data Coverage -->
+      <h2>Data Coverage</h2>
+      
+      <p>Your dashboard includes:</p>
+      <ul>
+        <li><strong>Time Period:</strong> October 2025 (most recent month)</li>
+        <li><strong>Platforms:</strong> All 5 major platforms</li>
+        <li><strong>Segments:</strong> 360 unique combinations of region, age, and gender</li>
+        <li><strong>Metrics:</strong> 10+ performance indicators per segment</li>
+      </ul>
+
+      <!-- Contact -->
+      <div class="mt-12 pt-8 border-t border-gray-200">
+        <p class="text-sm text-gray-600">
+          Need help? Click the Agent Config button to customize how the AI responds to your questions.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
