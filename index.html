@@ -471,20 +471,70 @@ function DynamicVisualization({ visualization }) {
   }
 }
 
+    // Password Modal Component
+    function PasswordModal({ onClose, onSuccess }) {
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState(false);
+      const correctPassword = 'iamyoursmartaiagent';
+
+      const handleSubmit = () => {
+        if (password === correctPassword) {
+          onSuccess();
+        } else {
+          setError(true);
+          setTimeout(() => setError(false), 2000);
+        }
+      };
+
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+          handleSubmit();
+        }
+      };
+
+      return React.createElement('div', { 
+        className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50',
+        onClick: onClose
+      },
+        React.createElement('div', { 
+          className: 'bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl',
+          onClick: (e) => e.stopPropagation()
+        },
+          React.createElement('p', { className: 'text-gray-800 mb-4' }, 
+            'Kristen, you gotta type password to access agent configs :)'
+          ),
+          React.createElement('input', {
+            type: 'password',
+            value: password,
+            onChange: (e) => setPassword(e.target.value),
+            onKeyPress: handleKeyPress,
+            placeholder: 'Enter password',
+            className: `w-full px-4 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4`
+          }),
+          error && React.createElement('p', { className: 'text-red-500 text-sm mb-4' }, 'Incorrect password!'),
+          React.createElement('div', { className: 'flex gap-3' },
+            React.createElement('button', {
+              onClick: onClose,
+              className: 'flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50'
+            }, 'Cancel'),
+            React.createElement('button', {
+              onClick: handleSubmit,
+              className: 'flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800'
+            }, 'Done')
+          )
+        )
+      );
+    }
+
     function AdAgentOS() {
       const [messages, setMessages] = useState([
         { role: 'assistant', content: 'Hello! I\'m your AI performance analyst. Ask me about your video ad campaigns.' }
       ]);
       const [input, setInput] = useState('');
       const [isLoading, setIsLoading] = useState(false);
-      const [showAgents, setShowAgents] = useState(false);
-      const [thinkingMessage, setThinkingMessage] = useState(''); // ADDED: Thinking message state
+      const [showPasswordModal, setShowPasswordModal] = useState(false);
+      const [thinkingMessage, setThinkingMessage] = useState('');
       const messagesEndRef = useRef(null);
-
-      const [agentPrompts, setAgentPrompts] = useState({
-        queryGeneratorAgent: 'You are an expert SQL query generator for marketing analytics. Generate safe, efficient PostgreSQL queries based on user questions.',
-        answerGeneratorAgent: 'You are a marketing performance analyst. Provide specific, data-driven insights with exact numbers from the query results.'
-      });
 
       const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -494,7 +544,7 @@ function DynamicVisualization({ visualization }) {
         scrollToBottom();
       }, [messages]);
 
-      // ADDED: Get context-aware thinking messages
+      // Get context-aware thinking messages
       const getThinkingMessages = (userMessage) => {
         const lower = userMessage.toLowerCase();
         
@@ -550,7 +600,7 @@ function DynamicVisualization({ visualization }) {
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsLoading(true);
 
-        // ADDED: Start thinking message progression
+        // Start thinking message progression
         const thinkingStages = getThinkingMessages(userMessage);
         let stageIndex = 0;
         setThinkingMessage(thinkingStages[0]);
@@ -567,8 +617,7 @@ function DynamicVisualization({ visualization }) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              message: userMessage,
-              agentPrompts 
+              message: userMessage
             })
           });
 
@@ -586,7 +635,7 @@ function DynamicVisualization({ visualization }) {
             content: 'Error connecting to backend. Please check console.' 
           }]);
         } finally {
-          clearInterval(interval); // ADDED: Clear thinking message interval
+          clearInterval(interval);
           setThinkingMessage('');
           setIsLoading(false);
         }
@@ -599,18 +648,39 @@ function DynamicVisualization({ visualization }) {
         }
       };
 
+      const handleConfigClick = () => {
+        setShowPasswordModal(true);
+      };
+
+      const handlePasswordSuccess = () => {
+        setShowPasswordModal(false);
+        window.location.href = 'agent_config.html';
+      };
+
       return React.createElement('div', { className: 'flex h-screen bg-white' },
+        // Add config button in top right
+        React.createElement('div', { 
+          style: { position: 'absolute', top: '20px', right: '20px', zIndex: 10 } 
+        },
+          React.createElement('button', {
+            onClick: handleConfigClick,
+            className: 'px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors'
+          }, 'Agent Config')
+        ),
+        
+        // Password Modal
+        showPasswordModal && React.createElement(PasswordModal, {
+          onClose: () => setShowPasswordModal(false),
+          onSuccess: handlePasswordSuccess
+        }),
+        
         React.createElement('div', { className: 'flex-1 flex flex-col' },
           React.createElement('div', { className: 'border-b border-gray-100 px-8 py-6' },
             React.createElement('div', { className: 'flex items-center justify-between' },
               React.createElement('div', null,
                 React.createElement('h1', { className: 'text-2xl font-light text-gray-900' }, 'AdAgentOS'),
                 React.createElement('p', { className: 'text-sm text-gray-500 mt-1' }, 'AI Performance Analyst')
-              ),
-              React.createElement('button', {
-                onClick: () => setShowAgents(!showAgents),
-                className: 'p-2 hover:bg-gray-50 rounded-lg transition-colors'
-              }, React.createElement('span', null, '⚙️'))
+              )
             )
           ),
           React.createElement('div', { className: 'flex-1 overflow-y-auto px-8 py-6' },
@@ -637,7 +707,7 @@ function DynamicVisualization({ visualization }) {
                   message.visualization && React.createElement(DynamicVisualization, { visualization: message.visualization })
                 )
               ),
-              // UPDATED: Show thinking message instead of just "Analyzing..."
+              // Show thinking message
               isLoading && React.createElement('div', { className: 'flex justify-start' },
                 React.createElement('div', { className: 'bg-gray-50 rounded-2xl px-6 py-4' },
                   React.createElement('span', { className: 'text-gray-600 text-sm' }, thinkingMessage)
@@ -664,21 +734,6 @@ function DynamicVisualization({ visualization }) {
                   className: 'p-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 disabled:opacity-50'
                 }, React.createElement('span', null, '➤'))
               )
-            )
-          )
-        ),
-        showAgents && React.createElement('div', { className: 'w-96 border-l border-gray-100 bg-gray-50 p-6 overflow-y-auto' },
-          React.createElement('h2', { className: 'text-lg font-light mb-6' }, 'Agent Configuration'),
-          Object.entries(agentPrompts).map(([agent, prompt]) =>
-            React.createElement('div', { key: agent, className: 'mb-4 bg-white rounded-xl p-4' },
-              React.createElement('div', { className: 'text-sm font-medium mb-2' }, 
-                agent === 'queryGeneratorAgent' ? '🔍 Query Generator' : '💡 Answer Generator'
-              ),
-              React.createElement('textarea', {
-                value: prompt,
-                onChange: (e) => setAgentPrompts(prev => ({...prev, [agent]: e.target.value})),
-                className: 'w-full h-24 p-2 text-xs bg-gray-50 rounded'
-              })
             )
           )
         )
