@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Configuration - AdAgentOS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styles to match main app */
+    .input-field {
+      font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f3f4f6;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <a href="index.html" class="text-gray-600 hover:text-gray-900 mr-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </a>
+          <h1 class="text-xl font-semibold text-gray-900">Agent Configuration</h1>
+        </div>
+        <p class="text-sm text-gray-600">Customize how your AI agents understand and respond to queries</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex gap-8">
+      <!-- Sidebar -->
+      <div class="w-64 flex-shrink-0">
+        <!-- Agent Tabs -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-2 mb-4">
+          <button id="queryTab" class="w-full text-left px-4 py-2.5 rounded-md text-sm font-medium text-white bg-blue-500 mb-1" onclick="switchAgent('query')">
+            🔍 Query Generator
+          </button>
+          <button id="analysisTab" class="w-full text-left px-4 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100" onclick="switchAgent('analysis')">
+            💡 Analysis Agent
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-3">
+          <button onclick="saveConfiguration()" class="w-full px-4 py-2.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors shadow-sm">
+            Save Configuration
+          </button>
+          <button onclick="resetToDefault()" class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Reset to Default
+          </button>
+          <button onclick="previewChanges()" class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Preview Changes
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Query Generator Configuration -->
+        <div id="query-config" class="agent-config">
+          <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Query Generator Agent</h2>
+            <p class="text-sm text-gray-600 mt-1">Converts natural language questions into SQL queries</p>
+          </div>
+
+          <div class="p-6 space-y-6 max-h-[calc(100vh-250px)] overflow-y-auto">
+            <!-- System Prompt -->
+            <div class="animate-fadeIn">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">System Prompt</label>
+                <span class="text-xs text-gray-500 font-mono">systemPrompt</span>
+              </div>
+              <textarea id="query-systemPrompt" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="2">You are an expert SQL query generator for marketing analytics. Convert natural language questions into safe PostgreSQL queries.</textarea>
+            </div>
+
+            <!-- Database Schema -->
+            <div class="animate-fadeIn" style="animation-delay: 0.1s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Database Schema</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;database_schema&gt;</span>
+              </div>
+              <textarea id="query-database_schema" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="12">Table: video_ad_performance
+Columns:
+- report_month: '2025-10-01' (always filter by this)
+- platform: TikTok, Instagram, Facebook, YouTube, Snapchat
+- region: Northeast, Midwest, South, West
+- age_group: 18-24, 25-34, 35-44, 45-54, 55-64, 65+
+- gender: male, female, unknown
+- spend, revenue, clicks, impressions, conversions (numeric)
+- video_starts, views_3s, views_25, views_50, views_100 (bigint)
+
+Calculated metrics:
+- ROAS = SUM(revenue) / NULLIF(SUM(spend), 0)
+- CTR = (SUM(clicks) / NULLIF(SUM(impressions), 0)) * 100
+- CPA = SUM(spend) / NULLIF(SUM(conversions), 0)
+- Video Completion Rate = (SUM(views_100) / NULLIF(SUM(video_starts), 0)) * 100</textarea>
+            </div>
+
+            <!-- Instructions -->
+            <div class="animate-fadeIn" style="animation-delay: 0.2s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Instructions</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;instructions&gt;</span>
+              </div>
+              
+              <div class="space-y-3">
+                <!-- Step 1 -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Step 1</span>
+                    <span class="text-xs text-gray-500 font-mono">step1</span>
+                  </div>
+                  <textarea id="query-instructions-step1" class="input-field w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="1">Determine if this can be answered with available data</textarea>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Step 2</span>
+                    <span class="text-xs text-gray-500 font-mono">step2</span>
+                  </div>
+                  <textarea id="query-instructions-step2" class="input-field w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="1">If yes, generate SELECT query. If no, explain what data is available</textarea>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Step 3</span>
+                    <span class="text-xs text-gray-500 font-mono">step3</span>
+                  </div>
+                  <textarea id="query-instructions-step3" class="input-field w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="1">For strategy questions, always GROUP BY the relevant dimension</textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rules -->
+            <div class="animate-fadeIn" style="animation-delay: 0.3s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Rules</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;rules&gt;</span>
+              </div>
+              <textarea id="query-rules" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="5">- Only SELECT queries allowed
+- Always include WHERE report_month = '2025-10-01'
+- Use NULLIF to prevent division by zero
+- No semicolon at the end
+- Cast to ::numeric for percentages</textarea>
+            </div>
+
+            <!-- Examples -->
+            <div class="animate-fadeIn" style="animation-delay: 0.4s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Examples</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;examples&gt;</span>
+              </div>
+              <textarea id="query-examples" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="8">Question: "Which platform has best ROAS?"
+Query: SELECT platform, SUM(revenue) / NULLIF(SUM(spend), 0) as roas FROM video_ad_performance WHERE report_month = '2025-10-01' GROUP BY platform ORDER BY roas DESC
+
+Question: "What's my Twitter performance?"
+Response: I don't have Twitter data. I can analyze TikTok, Instagram, Facebook, YouTube, or Snapchat performance.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analysis Agent Configuration -->
+        <div id="analysis-config" class="agent-config hidden">
+          <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Analysis Agent</h2>
+            <p class="text-sm text-gray-600 mt-1">Transforms data into actionable insights and recommendations</p>
+          </div>
+
+          <div class="p-6 space-y-6 max-h-[calc(100vh-250px)] overflow-y-auto">
+            <!-- System Prompt -->
+            <div class="animate-fadeIn">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">System Prompt</label>
+                <span class="text-xs text-gray-500 font-mono">systemPrompt</span>
+              </div>
+              <textarea id="analysis-systemPrompt" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="2">You are a marketing performance analyst. Transform data into actionable insights with precise numbers and clear recommendations.</textarea>
+            </div>
+
+            <!-- Context Template -->
+            <div class="animate-fadeIn" style="animation-delay: 0.1s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Context Template</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;context&gt;</span>
+              </div>
+              <textarea id="analysis-context" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="3">User Question: "${userQuestion}"
+SQL Query: ${sql}</textarea>
+              <p class="text-xs text-gray-600 mt-2">
+                Variables: <code class="bg-amber-100 text-amber-700 px-1 rounded">${userQuestion}</code> <code class="bg-amber-100 text-amber-700 px-1 rounded">${sql}</code>
+              </p>
+            </div>
+
+            <!-- Data Template Note -->
+            <div class="animate-fadeIn" style="animation-delay: 0.15s">
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex">
+                  <svg class="w-5 h-5 text-blue-400 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                  </svg>
+                  <div>
+                    <span class="text-sm font-medium text-blue-900">Data Template</span>
+                    <p class="text-sm text-blue-700 mt-1">The data section is automatically populated with <code class="bg-blue-100 text-blue-700 px-1 rounded">${formattedResults}</code></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="animate-fadeIn" style="animation-delay: 0.2s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Instructions (Strategy)</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;instructions&gt;</span>
+              </div>
+              
+              <div class="space-y-3">
+                <!-- Step 1 -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Step 1: Identify the budget action type</span>
+                    <span class="text-xs text-gray-500 font-mono">step1</span>
+                  </div>
+                  <textarea id="analysis-instructions-step1" class="input-field w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="3">- CUT: "reduce budget", "cut $X", "save money" → Decrease total budget
+- ADD: "have $X to invest", "extra budget", "additional $X" → Increase total budget  
+- REALLOCATE: "optimize", "shift", "move budget" → Keep total budget same</textarea>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Step 2: Identify the dimension in the data</span>
+                    <span class="text-xs text-gray-500 font-mono">step2</span>
+                  </div>
+                  <textarea id="analysis-instructions-step2" class="input-field w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="1">- Look at the data keys: platform, region, age_group, or gender</textarea>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Step 3: Apply the appropriate strategy</span>
+                    <span class="text-xs text-gray-500 font-mono">step3</span>
+                  </div>
+                  <textarea id="analysis-instructions-step3" class="input-field w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="3">- For CUT: Remove from lowest ROAS segments until target reached
+- For ADD: Distribute using performance tiers (50% top, 30% mid, 20% low)
+- For REALLOCATE: Move 30-40% from worst to best performers</textarea>
+                </div>
+                
+                <!-- Step 4 -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">Step 4: Calculate exact impact using actual ROAS values</span>
+                    <span class="text-xs text-gray-500 font-mono">step4</span>
+                  </div>
+                  <textarea id="analysis-instructions-step4" class="input-field w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="1">Calculate exact impact using actual ROAS values</textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Formatting Rules -->
+            <div class="animate-fadeIn" style="animation-delay: 0.3s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Formatting Rules</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;formatting&gt;</span>
+              </div>
+              <textarea id="analysis-formatting" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="4">- Bold all numbers: **$75,000**, **5x**, **2.5%**
+- Bold all segments: **TikTok**, **Northeast**, **18-24**
+- Use bullet points with → arrows
+- Never use markdown tables</textarea>
+            </div>
+
+            <!-- Examples -->
+            <div class="animate-fadeIn" style="animation-delay: 0.4s">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-sm font-medium text-gray-700">Examples</label>
+                <span class="text-xs text-gray-500 font-mono">&lt;examples&gt;</span>
+              </div>
+              <textarea id="analysis-examples" class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical" rows="15">Example 1 - Adding New Budget:
+User: "I have $100k to distribute across platforms"
+Response Structure:
+**Current Performance:**
+→ **TikTok**: **$70k** spend, **8x** ROAS
+→ **YouTube**: **$71k** spend, **5x** ROAS
+[etc.]
+
+**Recommendation:**
+Add **$100k** distributed by performance:
+→ **TikTok**: +**$50k** (top tier gets 50%)
+→ **YouTube**: +**$30k** (second tier gets 30%)
+→ **Instagram**: +**$20k** (lower tiers share 20%)
+
+Example 2 - Cutting Budget:
+User: "Cut $100k from total budget"
+Response Structure:
+**Recommendation:**
+Remove **$100k** from lowest performers:
+→ **Facebook**: -**$50k** (from **$71k** to **$21k**)
+→ **Snapchat**: -**$50k** (from **$73k** to **$23k**)
+Total budget: **$360k** → **$260k**</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div id="successToast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+      </svg>
+      <span>Configuration saved successfully!</span>
+    </div>
+  </div>
+
+  <script>
+    // Store default configurations matching backend exactly
+    const defaultConfigs = {
+      query: {
+        'query-systemPrompt': 'You are an expert SQL query generator for marketing analytics. Convert natural language questions into safe PostgreSQL queries.',
+        'query-database_schema': `Table: video_ad_performance
+Columns:
+- report_month: '2025-10-01' (always filter by this)
+- platform: TikTok, Instagram, Facebook, YouTube, Snapchat
+- region: Northeast, Midwest, South, West
+- age_group: 18-24, 25-34, 35-44, 45-54, 55-64, 65+
+- gender: male, female, unknown
+- spend, revenue, clicks, impressions, conversions (numeric)
+- video_starts, views_3s, views_25, views_50, views_100 (bigint)
+
+Calculated metrics:
+- ROAS = SUM(revenue) / NULLIF(SUM(spend), 0)
+- CTR = (SUM(clicks) / NULLIF(SUM(impressions), 0)) * 100
+- CPA = SUM(spend) / NULLIF(SUM(conversions), 0)
+- Video Completion Rate = (SUM(views_100) / NULLIF(SUM(video_starts), 0)) * 100`,
+        'query-instructions-step1': 'Determine if this can be answered with available data',
+        'query-instructions-step2': 'If yes, generate SELECT query. If no, explain what data is available',
+        'query-instructions-step3': 'For strategy questions, always GROUP BY the relevant dimension',
+        'query-rules': `- Only SELECT queries allowed
+- Always include WHERE report_month = '2025-10-01'
+- Use NULLIF to prevent division by zero
+- No semicolon at the end
+- Cast to ::numeric for percentages`,
+        'query-examples': `Question: "Which platform has best ROAS?"
+Query: SELECT platform, SUM(revenue) / NULLIF(SUM(spend), 0) as roas FROM video_ad_performance WHERE report_month = '2025-10-01' GROUP BY platform ORDER BY roas DESC
+
+Question: "What's my Twitter performance?"
+Response: I don't have Twitter data. I can analyze TikTok, Instagram, Facebook, YouTube, or Snapchat performance.`
+      },
+      analysis: {
+        'analysis-systemPrompt': 'You are a marketing performance analyst. Transform data into actionable insights with precise numbers and clear recommendations.',
+        'analysis-context': `User Question: "\${userQuestion}"
+SQL Query: \${sql}`,
+        'analysis-instructions-step1': `- CUT: "reduce budget", "cut $X", "save money" → Decrease total budget
+- ADD: "have $X to invest", "extra budget", "additional $X" → Increase total budget  
+- REALLOCATE: "optimize", "shift", "move budget" → Keep total budget same`,
+        'analysis-instructions-step2': '- Look at the data keys: platform, region, age_group, or gender',
+        'analysis-instructions-step3': `- For CUT: Remove from lowest ROAS segments until target reached
+- For ADD: Distribute using performance tiers (50% top, 30% mid, 20% low)
+- For REALLOCATE: Move 30-40% from worst to best performers`,
+        'analysis-instructions-step4': 'Calculate exact impact using actual ROAS values',
+        'analysis-formatting': `- Bold all numbers: **$75,000**, **5x**, **2.5%**
+- Bold all segments: **TikTok**, **Northeast**, **18-24**
+- Use bullet points with → arrows
+- Never use markdown tables`,
+        'analysis-examples': `Example 1 - Adding New Budget:
+User: "I have $100k to distribute across platforms"
+Response Structure:
+**Current Performance:**
+→ **TikTok**: **$70k** spend, **8x** ROAS
+→ **YouTube**: **$71k** spend, **5x** ROAS
+[etc.]
+
+**Recommendation:**
+Add **$100k** distributed by performance:
+→ **TikTok**: +**$50k** (top tier gets 50%)
+→ **YouTube**: +**$30k** (second tier gets 30%)
+→ **Instagram**: +**$20k** (lower tiers share 20%)
+
+Example 2 - Cutting Budget:
+User: "Cut $100k from total budget"
+Response Structure:
+**Recommendation:**
+Remove **$100k** from lowest performers:
+→ **Facebook**: -**$50k** (from **$71k** to **$21k**)
+→ **Snapchat**: -**$50k** (from **$73k** to **$23k**)
+Total budget: **$360k** → **$260k**`
+      }
+    };
+
+    function switchAgent(agent) {
+      // Update tabs
+      if (agent === 'query') {
+        document.getElementById('queryTab').classList.add('bg-blue-500', 'text-white');
+        document.getElementById('queryTab').classList.remove('text-gray-700', 'hover:bg-gray-100');
+        document.getElementById('analysisTab').classList.remove('bg-blue-500', 'text-white');
+        document.getElementById('analysisTab').classList.add('text-gray-700', 'hover:bg-gray-100');
+        
+        document.getElementById('query-config').classList.remove('hidden');
+        document.getElementById('analysis-config').classList.add('hidden');
+      } else {
+        document.getElementById('analysisTab').classList.add('bg-blue-500', 'text-white');
+        document.getElementById('analysisTab').classList.remove('text-gray-700', 'hover:bg-gray-100');
+        document.getElementById('queryTab').classList.remove('bg-blue-500', 'text-white');
+        document.getElementById('queryTab').classList.add('text-gray-700', 'hover:bg-gray-100');
+        
+        document.getElementById('analysis-config').classList.remove('hidden');
+        document.getElementById('query-config').classList.add('hidden');
+      }
+    }
+
+    function resetToDefault() {
+      if (confirm('Reset all settings to default? This cannot be undone.')) {
+        const activeAgent = document.getElementById('queryTab').classList.contains('bg-blue-500') ? 'query' : 'analysis';
+        const fields = defaultConfigs[activeAgent];
+        
+        Object.keys(fields).forEach(fieldId => {
+          const field = document.getElementById(fieldId);
+          if (field) {
+            field.value = fields[fieldId];
+          }
+        });
+        
+        showToast();
+      }
+    }
+
+    function saveConfiguration() {
+      // Gather configuration matching backend structure
+      const config = {
+        queryGenerator: {
+          systemPrompt: document.getElementById('query-systemPrompt').value,
+          databaseSchema: document.getElementById('query-database_schema').value,
+          instructions: {
+            step1: document.getElementById('query-instructions-step1').value,
+            step2: document.getElementById('query-instructions-step2').value,
+            step3: document.getElementById('query-instructions-step3').value
+          },
+          rules: document.getElementById('query-rules').value,
+          examples: document.getElementById('query-examples').value
+        },
+        analysisAgent: {
+          systemPrompt: document.getElementById('analysis-systemPrompt').value,
+          context: document.getElementById('analysis-context').value,
+          instructions: {
+            step1: document.getElementById('analysis-instructions-step1').value,
+            step2: document.getElementById('analysis-instructions-step2').value,
+            step3: document.getElementById('analysis-instructions-step3').value,
+            step4: document.getElementById('analysis-instructions-step4').value
+          },
+          formatting: document.getElementById('analysis-formatting').value,
+          examples: document.getElementById('analysis-examples').value
+        }
+      };
+      
+      // Store in localStorage for now
+      localStorage.setItem('agentConfig', JSON.stringify(config));
+      
+      console.log('Configuration saved:', config);
+      
+      // TODO: Send to backend API endpoint
+      // fetch('/api/agent-config', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(config)
+      // });
+      
+      showToast();
+    }
+
+    function previewChanges() {
+      // Save current config to localStorage
+      saveConfiguration();
+      
+      // Redirect to main app with preview flag
+      window.location.href = 'index.html?preview=true';
+    }
+
+    function showToast() {
+      const toast = document.getElementById('successToast');
+      toast.style.transform = 'translateX(0)';
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+      }, 3000);
+    }
+
+    // Load saved configuration on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedConfig = localStorage.getItem('agentConfig');
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        
+        // Populate query fields
+        if (config.queryGenerator) {
+          document.getElementById('query-systemPrompt').value = config.queryGenerator.systemPrompt || '';
+          document.getElementById('query-database_schema').value = config.queryGenerator.databaseSchema || '';
+          document.getElementById('query-instructions-step1').value = config.queryGenerator.instructions?.step1 || '';
+          document.getElementById('query-instructions-step2').value = config.queryGenerator.instructions?.step2 || '';
+          document.getElementById('query-instructions-step3').value = config.queryGenerator.instructions?.step3 || '';
+          document.getElementById('query-rules').value = config.queryGenerator.rules || '';
+          document.getElementById('query-examples').value = config.queryGenerator.examples || '';
+        }
+        
+        // Populate analysis fields
+        if (config.analysisAgent) {
+          document.getElementById('analysis-systemPrompt').value = config.analysisAgent.systemPrompt || '';
+          document.getElementById('analysis-context').value = config.analysisAgent.context || '';
+          document.getElementById('analysis-instructions-step1').value = config.analysisAgent.instructions?.step1 || '';
+          document.getElementById('analysis-instructions-step2').value = config.analysisAgent.instructions?.step2 || '';
+          document.getElementById('analysis-instructions-step3').value = config.analysisAgent.instructions?.step3 || '';
+          document.getElementById('analysis-instructions-step4').value = config.analysisAgent.instructions?.step4 || '';
+          document.getElementById('analysis-formatting').value = config.analysisAgent.formatting || '';
+          document.getElementById('analysis-examples').value = config.analysisAgent.examples || '';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
