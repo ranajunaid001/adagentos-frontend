@@ -23,6 +23,21 @@
       overflow-x: auto;
       white-space: pre;
     }
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .example-card {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .example-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
   </style>
 </head>
 <body>
@@ -61,6 +76,65 @@
             </div>
           )}
         </div>
+      );
+    }
+
+    // Welcome State Component
+    function WelcomeState({ onExampleClick }) {
+      const examples = [
+        { icon: '📊', title: 'Analyze Performance', desc: 'ROAS, conversions, revenue metrics', question: 'Which platform has the best ROAS?' },
+        { icon: '💰', title: 'Budget Strategy', desc: 'Optimize spend allocation', question: 'Where should I invest more budget?' },
+        { icon: '📹', title: 'Video Metrics', desc: 'Completion rates, engagement', question: 'Show me video completion rates by platform' },
+        { icon: '🎯', title: 'Compare Segments', desc: 'Platforms, regions, demographics', question: 'Compare performance across all regions' }
+      ];
+
+      return React.createElement('div', { className: 'flex-1 flex items-center justify-center p-8 fade-in' },
+        React.createElement('div', { className: 'max-w-2xl w-full text-center' },
+          // Header
+          React.createElement('div', { className: 'mb-8' },
+            React.createElement('h1', { className: 'text-3xl font-light text-gray-900 mb-2' }, 'AdAgentOS'),
+            React.createElement('p', { className: 'text-gray-600' }, 'AI Performance Analyst')
+          ),
+          
+          // Connected Platforms
+          React.createElement('div', { className: 'mb-12' },
+            React.createElement('p', { className: 'text-sm text-gray-500 mb-4' }, 'Connected to your ad accounts'),
+            React.createElement('div', { className: 'flex flex-wrap justify-center gap-2' },
+              ['TikTok', 'Facebook', 'YouTube', 'Instagram', 'Snapchat'].map((platform, i) =>
+                React.createElement('span', { 
+                  key: platform,
+                  className: 'px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm',
+                  style: { animation: `fadeIn 0.6s ease-out ${0.1 * (i + 1)}s both` }
+                }, platform)
+              )
+            )
+          ),
+          
+          // Question Prompt
+          React.createElement('h2', { className: 'text-xl font-light text-gray-900 mb-8' }, 'What can I help you with?'),
+          
+          // Example Categories
+          React.createElement('div', { className: 'grid grid-cols-2 gap-4 mb-8' },
+            examples.map(example =>
+              React.createElement('div', { 
+                key: example.title,
+                className: 'example-card bg-gray-50 rounded-xl p-6 text-left hover:bg-gray-100',
+                onClick: () => onExampleClick(example.question)
+              },
+                React.createElement('div', { className: 'text-2xl mb-2' }, example.icon),
+                React.createElement('h3', { className: 'font-medium text-gray-900 mb-1' }, example.title),
+                React.createElement('p', { className: 'text-sm text-gray-600' }, example.desc)
+              )
+            )
+          ),
+          
+          // Example Question
+          React.createElement('div', { className: 'text-gray-500 text-sm' },
+            React.createElement('span', { className: 'inline-block px-3 py-1 bg-gray-100 rounded-lg' },
+              'Example: "Which platform has the best ROAS?"'
+            )
+          )
+        )
       );
     }
 
@@ -592,11 +666,13 @@ function DynamicVisualization({ visualization }) {
         }
       };
 
-      const handleSend = async () => {
-        if (!input.trim()) return;
+      const handleSend = async (messageText = null) => {
+        const userMessage = messageText || input;
+        if (!userMessage.trim()) return;
 
-        const userMessage = input;
-        setInput('');
+        if (!messageText) {
+          setInput('');
+        }
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsLoading(true);
 
@@ -613,11 +689,25 @@ function DynamicVisualization({ visualization }) {
         }, 1200); // Change message every 1.2 seconds
 
         try {
+          // Get saved config from localStorage
+          const savedConfig = localStorage.getItem('agentConfig');
+          const agentConfig = savedConfig ? JSON.parse(savedConfig) : null;
+          
+          // Get conversation history (last 5 exchanges)
+          const conversationHistory = messages
+            .slice(-10) // Get last 10 messages (5 user + 5 assistant)
+            .map(msg => ({
+              role: msg.role,
+              content: msg.content // Just the text, no SQL or visualizations
+            }));
+          
           const response = await fetch('https://adagentos-backend-production.up.railway.app/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              message: userMessage
+              message: userMessage,
+              conversationHistory: conversationHistory,
+              agentConfig: agentConfig
             })
           });
 
@@ -657,6 +747,11 @@ function DynamicVisualization({ visualization }) {
         window.location.href = 'agent_config.html';
       };
 
+      const handleExampleClick = (question) => {
+        setInput(question);
+        handleSend(question);
+      };
+
       return React.createElement('div', { className: 'flex h-screen bg-white' },
         // Add config button in top right
         React.createElement('div', { 
@@ -683,39 +778,49 @@ function DynamicVisualization({ visualization }) {
               )
             )
           ),
-          React.createElement('div', { className: 'flex-1 overflow-y-auto px-8 py-6' },
-            React.createElement('div', { className: 'max-w-4xl mx-auto space-y-6' },
-              messages.map((message, idx) => 
-                React.createElement('div', { key: idx },
-                  React.createElement('div', { 
-                    className: `flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-2` 
-                  },
-                    React.createElement('div', { 
-                      className: `max-w-2xl ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} rounded-2xl px-6 py-4` 
-                    },
-                      message.role === 'user' 
-                        ? React.createElement('p', { className: 'text-sm' }, message.content)
-                        : React.createElement('div', null,
-                            message.sql && React.createElement(CollapsibleSQL, { sql: message.sql }),
-                            React.createElement('div', { 
-                              className: 'text-sm',
-                              dangerouslySetInnerHTML: { __html: formatText(message.content) }
-                            })
+          
+          // Show Welcome State when messages are minimal, otherwise show chat
+          React.createElement('div', { className: 'flex-1 overflow-y-auto' },
+            messages.length <= 1 
+              ? React.createElement(WelcomeState, {
+                  onExampleClick: handleExampleClick
+                })
+              : React.createElement('div', { className: 'px-8 py-6' },
+                  React.createElement('div', { className: 'max-w-4xl mx-auto space-y-6' },
+                    messages.map((message, idx) => 
+                      React.createElement('div', { key: idx },
+                        React.createElement('div', { 
+                          className: `flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-2` 
+                        },
+                          React.createElement('div', { 
+                            className: `max-w-2xl ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} rounded-2xl px-6 py-4` 
+                          },
+                            message.role === 'user' 
+                              ? React.createElement('p', { className: 'text-sm' }, message.content)
+                              : React.createElement('div', null,
+                                  message.sql && React.createElement(CollapsibleSQL, { sql: message.sql }),
+                                  React.createElement('div', { 
+                                    className: 'text-sm',
+                                    dangerouslySetInnerHTML: { __html: formatText(message.content) }
+                                  })
+                                )
                           )
-                    )
-                  ),
-                  message.visualization && React.createElement(DynamicVisualization, { visualization: message.visualization })
+                        ),
+                        message.visualization && React.createElement(DynamicVisualization, { visualization: message.visualization })
+                      )
+                    ),
+                    // Show thinking message
+                    isLoading && React.createElement('div', { className: 'flex justify-start' },
+                      React.createElement('div', { className: 'bg-gray-50 rounded-2xl px-6 py-4' },
+                        React.createElement('span', { className: 'text-gray-600 text-sm' }, thinkingMessage)
+                      )
+                    ),
+                    React.createElement('div', { ref: messagesEndRef })
+                  )
                 )
-              ),
-              // Show thinking message
-              isLoading && React.createElement('div', { className: 'flex justify-start' },
-                React.createElement('div', { className: 'bg-gray-50 rounded-2xl px-6 py-4' },
-                  React.createElement('span', { className: 'text-gray-600 text-sm' }, thinkingMessage)
-                )
-              ),
-              React.createElement('div', { ref: messagesEndRef })
-            )
           ),
+          
+          // Chat input (always visible)
           React.createElement('div', { className: 'border-t border-gray-100 px-8 py-6' },
             React.createElement('div', { className: 'max-w-4xl mx-auto' },
               React.createElement('div', { className: 'flex items-end space-x-4' },
@@ -729,7 +834,7 @@ function DynamicVisualization({ visualization }) {
                   style: { minHeight: '48px' }
                 }),
                 React.createElement('button', {
-                  onClick: handleSend,
+                  onClick: () => handleSend(),
                   disabled: isLoading || !input.trim(),
                   className: 'p-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 disabled:opacity-50'
                 }, React.createElement('span', null, '➤'))
