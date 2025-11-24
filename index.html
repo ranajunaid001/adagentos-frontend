@@ -64,263 +64,353 @@
       );
     }
 
-    // UPDATED: Metric-aware visualization component
-    function DynamicVisualization({ visualization }) {
-      // FIX: Return null if no visualization or single query
-      if (!visualization || visualization.type !== 'comparison') return null;
+function DynamicVisualization({ visualization }) {
+  if (!visualization || visualization.type !== 'comparison') return null;
 
-      const { dimension, data, requestedMetrics = ['financial'] } = visualization;
-      const items = Object.keys(data);
-      const primaryMetric = requestedMetrics[0];
-      
-      // Calculate totals
-      const totalSpend = Object.values(data).reduce((sum, d) => sum + (d.spend || 0), 0);
-      const totalRevenue = Object.values(data).reduce((sum, d) => sum + (d.revenue || 0), 0);
-      const overallROAS = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : 0;
-      const totalConversions = Object.values(data).reduce((sum, d) => sum + (d.conversions || 0), 0);
-      const totalClicks = Object.values(data).reduce((sum, d) => sum + (d.clicks || 0), 0);
-      const totalImpressions = Object.values(data).reduce((sum, d) => sum + (d.impressions || 0), 0);
-      const overallCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : 0;
-      const overallConvRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : 0;
+  const { dimension, data, requestedMetrics = ['financial'] } = visualization;
+  const items = Object.keys(data);
+  const primaryMetric = requestedMetrics[0];
+  
+  // Capitalize dimension name
+  const dimensionLabel = dimension === 'age_group' ? 'Age Group' : 
+                       dimension.charAt(0).toUpperCase() + dimension.slice(1);
 
-      // Color mapping for platforms (adapt for other dimensions with defaults)
-      const platformColors = {
-        TikTok: { bg: '#000000', text: '#FFFFFF' },
-        Instagram: { bg: '#E4405F', text: '#FFFFFF' },
-        Facebook: { bg: '#1877F2', text: '#FFFFFF' },
-        YouTube: { bg: '#FF0000', text: '#FFFFFF' },
-        Snapchat: { bg: '#FFFC00', text: '#000000' }
-      };
+  // Platform colors
+  const platformColors = {
+    TikTok: { bg: '#000000', text: '#FFFFFF' },
+    Instagram: { bg: '#E4405F', text: '#FFFFFF' },
+    Facebook: { bg: '#1877F2', text: '#FFFFFF' },
+    YouTube: { bg: '#FF0000', text: '#FFFFFF' },
+    Snapchat: { bg: '#FFFC00', text: '#000000' }
+  };
 
-      const getColor = (item) => {
-        if (dimension === 'platform' && platformColors[item]) {
-          return platformColors[item];
-        }
-        // Default colors for other dimensions
-        const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-        const index = items.indexOf(item) % colors.length;
-        return { bg: colors[index], text: '#FFFFFF' };
-      };
+  const getColor = (item) => {
+    if (dimension === 'platform' && platformColors[item]) {
+      return platformColors[item];
+    }
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+    const index = items.indexOf(item) % colors.length;
+    return { bg: colors[index], text: '#FFFFFF' };
+  };
 
-      // Capitalize dimension name for display
-      const dimensionLabel = dimension === 'age_group' ? 'Age Group' : 
-                           dimension.charAt(0).toUpperCase() + dimension.slice(1);
+  // VIDEO COMPLETION RATE VISUALIZATION
+  if (primaryMetric === 'video_completion_rate') {
+    const maxRate = Math.max(...items.map(item => data[item].video_completion_rate || 0));
+    const totalStarts = Object.values(data).reduce((sum, d) => sum + (d.video_starts || 0), 0);
+    const totalCompletions = Object.values(data).reduce((sum, d) => sum + (d.views_100 || 0), 0);
+    const overallRate = totalStarts > 0 ? ((totalCompletions / totalStarts) * 100).toFixed(1) : 0;
+    
+    return React.createElement('div', { className: 'mt-4 space-y-6' },
+      // Video Summary Cards
+      React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-6' },
+        React.createElement('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Video Starts'),
+          React.createElement('div', { className: 'text-lg font-bold text-blue-600' }, (totalStarts/1000000).toFixed(1) + 'M')
+        ),
+        React.createElement('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Completed Views'),
+          React.createElement('div', { className: 'text-lg font-bold text-green-600' }, (totalCompletions/1000000).toFixed(1) + 'M')
+        ),
+        React.createElement('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Overall Completion'),
+          React.createElement('div', { className: 'text-lg font-bold text-purple-600' }, overallRate + '%')
+        )
+      ),
 
-      // UPDATED: Render different charts based on requested metrics
-      if (primaryMetric === 'ctr') {
-        // CTR-focused visualization
-        const maxCTR = Math.max(...items.map(item => data[item].ctr || 0));
-        
-        return React.createElement('div', { className: 'mt-4 space-y-6' },
-          // Summary Cards
-          React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-6' },
-            React.createElement('div', { className: 'bg-gray-50 rounded-lg p-3 border border-gray-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Impressions'),
-              React.createElement('div', { className: 'text-lg font-bold' }, (totalImpressions/1000000).toFixed(1) + 'M')
-            ),
-            React.createElement('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Clicks'),
-              React.createElement('div', { className: 'text-lg font-bold text-blue-600' }, (totalClicks/1000).toFixed(0) + 'k')
-            ),
-            React.createElement('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Overall CTR'),
-              React.createElement('div', { className: 'text-lg font-bold text-green-600' }, overallCTR + '%')
-            )
-          ),
-
-          // CTR Chart
-          React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
-            React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Click-Through Rate by ${dimensionLabel}`),
-            React.createElement('div', { className: 'space-y-3' },
-              items.sort((a, b) => (data[b].ctr || 0) - (data[a].ctr || 0)).map(item => {
-                const colors = getColor(item);
-                return React.createElement('div', { key: item, className: 'flex items-center' },
-                  React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
-                  React.createElement('div', { className: 'flex-1 mx-3' },
-                    React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
-                      React.createElement('div', {
-                        className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
-                        style: {
-                          width: ((data[item].ctr || 0) / maxCTR * 100) + '%',
-                          backgroundColor: colors.bg,
-                          color: colors.text
-                        }
-                      }, (data[item].ctr || 0).toFixed(2) + '%')
-                    )
-                  ),
-                  React.createElement('div', { className: 'text-xs text-gray-500' }, 
-                    (data[item].clicks || 0).toLocaleString() + ' clicks'
-                  )
-                );
-              })
-            )
-          )
-        );
-      } else if (primaryMetric === 'conversion_rate' || primaryMetric === 'conversions') {
-        // Conversion-focused visualization
-        const maxConvRate = Math.max(...items.map(item => data[item].conversionRate || 0));
-        
-        return React.createElement('div', { className: 'mt-4 space-y-6' },
-          // Summary Cards
-          React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-6' },
-            React.createElement('div', { className: 'bg-gray-50 rounded-lg p-3 border border-gray-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Clicks'),
-              React.createElement('div', { className: 'text-lg font-bold' }, (totalClicks/1000).toFixed(0) + 'k')
-            ),
-            React.createElement('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Conversions'),
-              React.createElement('div', { className: 'text-lg font-bold text-purple-600' }, (totalConversions/1000).toFixed(1) + 'k')
-            ),
-            React.createElement('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Overall Conv. Rate'),
-              React.createElement('div', { className: 'text-lg font-bold text-green-600' }, overallConvRate + '%')
-            )
-          ),
-
-          // Conversion Rate Chart
-          React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
-            React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Conversion Rate by ${dimensionLabel}`),
-            React.createElement('div', { className: 'space-y-3' },
-              items.sort((a, b) => (data[b].conversionRate || 0) - (data[a].conversionRate || 0)).map(item => {
-                const colors = getColor(item);
-                return React.createElement('div', { key: item, className: 'flex items-center' },
-                  React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
-                  React.createElement('div', { className: 'flex-1 mx-3' },
-                    React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
-                      React.createElement('div', {
-                        className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
-                        style: {
-                          width: ((data[item].conversionRate || 0) / maxConvRate * 100) + '%',
-                          backgroundColor: colors.bg,
-                          color: colors.text
-                        }
-                      }, (data[item].conversionRate || 0).toFixed(2) + '%')
-                    )
-                  ),
-                  React.createElement('div', { className: 'text-xs text-gray-500' }, 
-                    (data[item].conversions || 0).toLocaleString() + ' conversions'
-                  )
-                );
-              })
-            )
-          )
-        );
-      } else if (primaryMetric === 'spend') {
-        // Spend-only visualization
-        const maxSpend = Math.max(...items.map(item => data[item].spend || 0));
-        
-        return React.createElement('div', { className: 'mt-4 space-y-6' },
-          // Summary Card
-          React.createElement('div', { className: 'bg-gray-50 rounded-lg p-4 border border-gray-200 mb-6' },
-            React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Ad Spend'),
-            React.createElement('div', { className: 'text-2xl font-bold' }, '$' + (totalSpend/1000).toFixed(0) + 'k')
-          ),
-
-          // Spend Chart
-          React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
-            React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Ad Spend by ${dimensionLabel}`),
-            React.createElement('div', { className: 'space-y-3' },
-              items.sort((a, b) => (data[b].spend || 0) - (data[a].spend || 0)).map(item => {
-                const colors = getColor(item);
-                return React.createElement('div', { key: item, className: 'flex items-center' },
-                  React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
-                  React.createElement('div', { className: 'flex-1 mx-3' },
-                    React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
-                      React.createElement('div', {
-                        className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
-                        style: {
-                          width: ((data[item].spend || 0) / maxSpend * 100) + '%',
-                          backgroundColor: colors.bg,
-                          color: colors.text
-                        }
-                      }, '$' + ((data[item].spend || 0)/1000).toFixed(1) + 'k')
-                    )
-                  )
-                );
-              })
-            )
-          )
-        );
-      } else {
-        // Default financial visualization (existing code for ROAS, revenue, etc.)
-        const maxROAS = Math.max(...items.map(item => data[item].roas || 0));
-        
-        return React.createElement('div', { className: 'mt-4 space-y-6' },
-          // Summary Cards
-          React.createElement('div', { className: 'grid grid-cols-4 gap-3 mb-6' },
-            React.createElement('div', { className: 'bg-gray-50 rounded-lg p-3 border border-gray-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Spend'),
-              React.createElement('div', { className: 'text-lg font-bold' }, '$' + (totalSpend/1000).toFixed(0) + 'k')
-            ),
-            React.createElement('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Revenue'),
-              React.createElement('div', { className: 'text-lg font-bold text-green-600' }, '$' + (totalRevenue/1000).toFixed(0) + 'k')
-            ),
-            React.createElement('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Overall ROAS'),
-              React.createElement('div', { className: 'text-lg font-bold text-blue-600' }, overallROAS + 'x')
-            ),
-            React.createElement('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
-              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Conversions'),
-              React.createElement('div', { className: 'text-lg font-bold text-purple-600' }, (totalConversions/1000).toFixed(1) + 'k')
-            )
-          ),
-
-          // ROAS Chart
-          React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
-            React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Return on Ad Spend by ${dimensionLabel}`),
-            React.createElement('div', { className: 'space-y-3' },
-              items.sort((a, b) => (data[b].roas || 0) - (data[a].roas || 0)).map(item => {
-                const colors = getColor(item);
-                return React.createElement('div', { key: item, className: 'flex items-center' },
-                  React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
-                  React.createElement('div', { className: 'flex-1 mx-3' },
-                    React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
-                      React.createElement('div', {
-                        className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
-                        style: {
-                          width: ((data[item].roas || 0) / maxROAS * 100) + '%',
-                          backgroundColor: colors.bg,
-                          color: colors.text
-                        }
-                      }, (data[item].roas || 0) + 'x')
-                    )
-                  )
-                );
-              })
-            )
-          ),
-
-          // Spend vs Revenue
-          React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
-            React.createElement('h3', { className: 'text-sm font-medium mb-4' }, 'Spend vs Revenue'),
-            React.createElement('div', { className: 'space-y-3' },
-              items.map(item =>
-                React.createElement('div', { key: item },
-                  React.createElement('div', { className: 'text-sm mb-1 truncate' }, item),
-                  React.createElement('div', { className: 'flex gap-2 items-center' },
-                    React.createElement('div', { className: 'text-xs w-12' }, 'Spend'),
-                    React.createElement('div', { 
-                      className: 'h-4 bg-red-500 rounded',
-                      style: { width: ((data[item].spend || 0) / 1000) + 'px', maxWidth: '300px' }
-                    }),
-                    React.createElement('div', { className: 'text-xs' }, '$' + ((data[item].spend || 0)/1000).toFixed(0) + 'k')
-                  ),
-                  React.createElement('div', { className: 'flex gap-2 items-center mt-1' },
-                    React.createElement('div', { className: 'text-xs w-12' }, 'Rev'),
-                    React.createElement('div', { 
-                      className: 'h-4 bg-green-500 rounded',
-                      style: { width: ((data[item].revenue || 0) / 1000) + 'px', maxWidth: '300px' }
-                    }),
-                    React.createElement('div', { className: 'text-xs' }, '$' + ((data[item].revenue || 0)/1000).toFixed(0) + 'k')
-                  )
+      // Video Completion Chart
+      React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
+        React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Video Completion Rate by ${dimensionLabel}`),
+        React.createElement('div', { className: 'space-y-3' },
+          items.sort((a, b) => (data[b].video_completion_rate || 0) - (data[a].video_completion_rate || 0)).map(item => {
+            const colors = getColor(item);
+            const rate = data[item].video_completion_rate || 0;
+            return React.createElement('div', { key: item, className: 'flex items-center' },
+              React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
+              React.createElement('div', { className: 'flex-1 mx-3' },
+                React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
+                  React.createElement('div', {
+                    className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
+                    style: {
+                      width: (rate / maxRate * 100) + '%',
+                      backgroundColor: colors.bg,
+                      color: colors.text
+                    }
+                  }, rate + '%')
                 )
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-500 text-right w-20' }, 
+                (data[item].views_100 || 0) > 1000 ? 
+                  ((data[item].views_100 || 0)/1000).toFixed(0) + 'k views' : 
+                  (data[item].views_100 || 0) + ' views'
+              )
+            );
+          })
+        )
+      ),
+
+      // Video Funnel
+      React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
+        React.createElement('h3', { className: 'text-sm font-medium mb-4' }, 'Video Engagement Funnel'),
+        React.createElement('div', { className: 'space-y-3' },
+          items.slice(0, 3).map(item => {
+            const d = data[item];
+            const starts = d.video_starts || 0;
+            return React.createElement('div', { key: item },
+              React.createElement('div', { className: 'text-sm font-medium mb-2' }, item),
+              React.createElement('div', { className: 'space-y-1' },
+                ['Start', '3s', '25%', '50%', '100%'].map((label, idx) => {
+                  const values = [starts, d.views_3s, d.views_25, d.views_50, d.views_100];
+                  const percentage = starts > 0 ? (values[idx] / starts * 100) : 0;
+                  return React.createElement('div', { key: label, className: 'flex items-center' },
+                    React.createElement('div', { className: 'w-10 text-xs' }, label),
+                    React.createElement('div', { className: 'flex-1 mx-2 bg-gray-100 rounded h-3' },
+                      React.createElement('div', {
+                        className: 'bg-blue-500 h-3 rounded',
+                        style: { width: percentage + '%' }
+                      })
+                    ),
+                    React.createElement('div', { className: 'text-xs text-gray-500' }, percentage.toFixed(0) + '%')
+                  );
+                })
+              )
+            );
+          })
+        )
+      )
+    );
+  }
+
+  // CTR VISUALIZATION
+  else if (primaryMetric === 'ctr') {
+    const maxCTR = Math.max(...items.map(item => data[item].ctr || 0));
+    const totalImpressions = Object.values(data).reduce((sum, d) => sum + (d.impressions || 0), 0);
+    const totalClicks = Object.values(data).reduce((sum, d) => sum + (d.clicks || 0), 0);
+    const overallCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : 0;
+    
+    return React.createElement('div', { className: 'mt-4 space-y-6' },
+      // CTR Summary Cards
+      React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-6' },
+        React.createElement('div', { className: 'bg-gray-50 rounded-lg p-3 border border-gray-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Impressions'),
+          React.createElement('div', { className: 'text-lg font-bold' }, (totalImpressions/1000000).toFixed(1) + 'M')
+        ),
+        React.createElement('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Clicks'),
+          React.createElement('div', { className: 'text-lg font-bold text-blue-600' }, (totalClicks/1000).toFixed(0) + 'k')
+        ),
+        React.createElement('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Overall CTR'),
+          React.createElement('div', { className: 'text-lg font-bold text-green-600' }, overallCTR + '%')
+        )
+      ),
+
+      // CTR Chart
+      React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
+        React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Click-Through Rate by ${dimensionLabel}`),
+        React.createElement('div', { className: 'space-y-3' },
+          items.sort((a, b) => (data[b].ctr || 0) - (data[a].ctr || 0)).map(item => {
+            const colors = getColor(item);
+            return React.createElement('div', { key: item, className: 'flex items-center' },
+              React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
+              React.createElement('div', { className: 'flex-1 mx-3' },
+                React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
+                  React.createElement('div', {
+                    className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
+                    style: {
+                      width: ((data[item].ctr || 0) / maxCTR * 100) + '%',
+                      backgroundColor: colors.bg,
+                      color: colors.text
+                    }
+                  }, (data[item].ctr || 0).toFixed(2) + '%')
+                )
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-500' }, 
+                ((data[item].clicks || 0)/1000).toFixed(1) + 'k clicks'
+              )
+            );
+          })
+        )
+      )
+    );
+  }
+
+  // CONVERSION RATE VISUALIZATION
+  else if (primaryMetric === 'conversion_rate' || primaryMetric === 'conversions') {
+    const maxConvRate = Math.max(...items.map(item => data[item].conversionRate || 0));
+    const totalClicks = Object.values(data).reduce((sum, d) => sum + (d.clicks || 0), 0);
+    const totalConversions = Object.values(data).reduce((sum, d) => sum + (d.conversions || 0), 0);
+    const overallConvRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : 0;
+    
+    return React.createElement('div', { className: 'mt-4 space-y-6' },
+      // Conversion Summary Cards
+      React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-6' },
+        React.createElement('div', { className: 'bg-gray-50 rounded-lg p-3 border border-gray-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Clicks'),
+          React.createElement('div', { className: 'text-lg font-bold' }, (totalClicks/1000).toFixed(0) + 'k')
+        ),
+        React.createElement('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Conversions'),
+          React.createElement('div', { className: 'text-lg font-bold text-purple-600' }, (totalConversions/1000).toFixed(1) + 'k')
+        ),
+        React.createElement('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Overall Conv. Rate'),
+          React.createElement('div', { className: 'text-lg font-bold text-green-600' }, overallConvRate + '%')
+        )
+      ),
+
+      // Conversion Rate Chart
+      React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
+        React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Conversion Rate by ${dimensionLabel}`),
+        React.createElement('div', { className: 'space-y-3' },
+          items.sort((a, b) => (data[b].conversionRate || 0) - (data[a].conversionRate || 0)).map(item => {
+            const colors = getColor(item);
+            return React.createElement('div', { key: item, className: 'flex items-center' },
+              React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
+              React.createElement('div', { className: 'flex-1 mx-3' },
+                React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
+                  React.createElement('div', {
+                    className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
+                    style: {
+                      width: ((data[item].conversionRate || 0) / maxConvRate * 100) + '%',
+                      backgroundColor: colors.bg,
+                      color: colors.text
+                    }
+                  }, (data[item].conversionRate || 0).toFixed(2) + '%')
+                )
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-500' }, 
+                ((data[item].conversions || 0)/1000).toFixed(1) + 'k conversions'
+              )
+            );
+          })
+        )
+      )
+    );
+  }
+
+  // SPEND ONLY VISUALIZATION
+  else if (primaryMetric === 'spend') {
+    const maxSpend = Math.max(...items.map(item => data[item].spend || 0));
+    const totalSpend = Object.values(data).reduce((sum, d) => sum + (d.spend || 0), 0);
+    
+    return React.createElement('div', { className: 'mt-4 space-y-6' },
+      // Single Summary Card
+      React.createElement('div', { className: 'bg-gray-50 rounded-lg p-4 border border-gray-200 mb-6' },
+        React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Ad Spend'),
+        React.createElement('div', { className: 'text-2xl font-bold' }, '$' + (totalSpend/1000).toFixed(0) + 'k')
+      ),
+
+      // Spend Chart
+      React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
+        React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Ad Spend by ${dimensionLabel}`),
+        React.createElement('div', { className: 'space-y-3' },
+          items.sort((a, b) => (data[b].spend || 0) - (data[a].spend || 0)).map(item => {
+            const colors = getColor(item);
+            return React.createElement('div', { key: item, className: 'flex items-center' },
+              React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
+              React.createElement('div', { className: 'flex-1 mx-3' },
+                React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
+                  React.createElement('div', {
+                    className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
+                    style: {
+                      width: ((data[item].spend || 0) / maxSpend * 100) + '%',
+                      backgroundColor: colors.bg,
+                      color: colors.text
+                    }
+                  }, '$' + ((data[item].spend || 0)/1000).toFixed(1) + 'k')
+                )
+              )
+            );
+          })
+        )
+      )
+    );
+  }
+
+  // DEFAULT: FINANCIAL METRICS (ROAS, Revenue, etc.)
+  else {
+    const maxROAS = Math.max(...items.map(item => data[item].roas || 0));
+    const totalSpend = Object.values(data).reduce((sum, d) => sum + (d.spend || 0), 0);
+    const totalRevenue = Object.values(data).reduce((sum, d) => sum + (d.revenue || 0), 0);
+    const overallROAS = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : 0;
+    const totalConversions = Object.values(data).reduce((sum, d) => sum + (d.conversions || 0), 0);
+    
+    return React.createElement('div', { className: 'mt-4 space-y-6' },
+      // Financial Summary Cards
+      React.createElement('div', { className: 'grid grid-cols-4 gap-3 mb-6' },
+        React.createElement('div', { className: 'bg-gray-50 rounded-lg p-3 border border-gray-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Spend'),
+          React.createElement('div', { className: 'text-lg font-bold' }, '$' + (totalSpend/1000).toFixed(0) + 'k')
+        ),
+        React.createElement('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Total Revenue'),
+          React.createElement('div', { className: 'text-lg font-bold text-green-600' }, '$' + (totalRevenue/1000).toFixed(0) + 'k')
+        ),
+        React.createElement('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Overall ROAS'),
+          React.createElement('div', { className: 'text-lg font-bold text-blue-600' }, overallROAS + 'x')
+        ),
+        React.createElement('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
+          React.createElement('div', { className: 'text-xs text-gray-600' }, 'Conversions'),
+          React.createElement('div', { className: 'text-lg font-bold text-purple-600' }, (totalConversions/1000).toFixed(1) + 'k')
+        )
+      ),
+
+      // ROAS Chart
+      React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
+        React.createElement('h3', { className: 'text-sm font-medium mb-4' }, `Return on Ad Spend by ${dimensionLabel}`),
+        React.createElement('div', { className: 'space-y-3' },
+          items.sort((a, b) => (data[b].roas || 0) - (data[a].roas || 0)).map(item => {
+            const colors = getColor(item);
+            return React.createElement('div', { key: item, className: 'flex items-center' },
+              React.createElement('div', { className: 'w-24 text-sm truncate' }, item),
+              React.createElement('div', { className: 'flex-1 mx-3' },
+                React.createElement('div', { className: 'bg-gray-100 rounded-full h-6 relative' },
+                  React.createElement('div', {
+                    className: 'h-6 rounded-full flex items-center justify-end pr-2 text-xs font-medium',
+                    style: {
+                      width: ((data[item].roas || 0) / maxROAS * 100) + '%',
+                      backgroundColor: colors.bg,
+                      color: colors.text
+                    }
+                  }, (data[item].roas || 0) + 'x')
+                )
+              )
+            );
+          })
+        )
+      ),
+
+      // Spend vs Revenue
+      React.createElement('div', { className: 'bg-white rounded-lg border border-gray-200 p-4' },
+        React.createElement('h3', { className: 'text-sm font-medium mb-4' }, 'Spend vs Revenue'),
+        React.createElement('div', { className: 'space-y-3' },
+          items.map(item =>
+            React.createElement('div', { key: item },
+              React.createElement('div', { className: 'text-sm mb-1 truncate' }, item),
+              React.createElement('div', { className: 'flex gap-2 items-center' },
+                React.createElement('div', { className: 'text-xs w-12' }, 'Spend'),
+                React.createElement('div', { 
+                  className: 'h-4 bg-red-500 rounded',
+                  style: { width: ((data[item].spend || 0) / 1000) + 'px', maxWidth: '300px' }
+                }),
+                React.createElement('div', { className: 'text-xs' }, '$' + ((data[item].spend || 0)/1000).toFixed(0) + 'k')
+              ),
+              React.createElement('div', { className: 'flex gap-2 items-center mt-1' },
+                React.createElement('div', { className: 'text-xs w-12' }, 'Rev'),
+                React.createElement('div', { 
+                  className: 'h-4 bg-green-500 rounded',
+                  style: { width: ((data[item].revenue || 0) / 1000) + 'px', maxWidth: '300px' }
+                }),
+                React.createElement('div', { className: 'text-xs' }, '$' + ((data[item].revenue || 0)/1000).toFixed(0) + 'k')
               )
             )
           )
-        );
-      }
-    }
+        )
+      )
+    );
+  }
+}
 
     function AdAgentOS() {
       const [messages, setMessages] = useState([
