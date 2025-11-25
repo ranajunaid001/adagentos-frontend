@@ -142,6 +142,18 @@ function DynamicVisualization({ visualization }) {
   if (!visualization || visualization.type !== 'comparison') return null;
 
   const { dimension, data, requestedMetrics = ['financial'], goal } = visualization;
+
+    // Override metrics based on goal
+  let metricsToShow = requestedMetrics;
+  if (goal === 'AWARENESS') {
+    metricsToShow = ['impressions', 'cpm'];
+  } else if (goal === 'ENGAGEMENT') {
+    metricsToShow = ['ctr'];
+  } else if (goal === 'CONVERSION') {
+    metricsToShow = ['financial'];
+  }
+  const primaryMetric = metricsToShow[0];
+  
   const items = Object.keys(data);
   const primaryMetric = requestedMetrics[0];
   
