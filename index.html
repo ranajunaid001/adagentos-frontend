@@ -707,7 +707,25 @@ function DynamicVisualization({ visualization }) {
           });
           
           const data = await response.json();
+          
           console.log('Analysis steps:', data.analysisSteps);
+          // NEW: Show dynamic analysis steps if available
+            if (data.analysisSteps && data.analysisSteps.length > 0) {
+              let stepIndex = 0;
+              const stepInterval = setInterval(() => {
+                if (stepIndex < data.analysisSteps.length) {
+                  setThinkingMessage(data.analysisSteps[stepIndex]);
+                  stepIndex++;
+                } else {
+                  clearInterval(stepInterval);
+                  // Clear thinking message after a short delay
+                  setTimeout(() => {
+                    setThinkingMessage('');
+                  }, 800);
+                }
+              }, 1200); // Show each step for 1.2 seconds
+            }
+          
           setMessages(prev => [...prev, { 
             role: 'assistant', 
             content: data.answer || 'No response received',
