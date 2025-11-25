@@ -141,7 +141,7 @@
 function DynamicVisualization({ visualization }) {
   if (!visualization || visualization.type !== 'comparison') return null;
 
-  const { dimension, data, requestedMetrics = ['financial'] } = visualization;
+  const { dimension, data, requestedMetrics = ['financial'], goal } = visualization;
   const items = Object.keys(data);
   const primaryMetric = requestedMetrics[0];
   
