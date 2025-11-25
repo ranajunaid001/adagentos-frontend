@@ -698,7 +698,9 @@ function DynamicVisualization({ visualization }) {
           });
           
           const data = await response.json();
-          
+            if (data.visualization) {
+             console.log('Visualization object:', JSON.stringify(data.visualization, null, 2));
+            }
           console.log('Analysis steps:', data.analysisSteps);
           
           // Show dynamic analysis steps if available
