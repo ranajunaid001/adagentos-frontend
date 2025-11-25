@@ -682,7 +682,8 @@ function DynamicVisualization({ visualization }) {
           .slice(-10)
           .map(msg => ({
             role: msg.role,
-            content: msg.content
+            content: msg.content,
+            goal: msg.goal
           }));
         
         // Simple initial message instead of complex stages
