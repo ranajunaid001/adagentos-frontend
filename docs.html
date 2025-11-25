@@ -57,6 +57,28 @@
       border-radius: 4px;
       font-weight: 500;
     }
+    .code-box {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    .agent-box {
+      background: #f0f9ff;
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .agent-box h4 {
+      color: #1e40af;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -85,6 +107,31 @@
       <p class="text-lg text-gray-600 mb-8">
         AdAgentOS is your AI-powered marketing analyst that helps you understand and optimize your video ad campaigns across all major platforms. Just ask questions in plain English, and get instant insights with actionable recommendations.
       </p>
+
+      <!-- Two-Agent System -->
+      <h2>How AdAgentOS Works: Two-Agent System</h2>
+      
+      <div class="agent-box">
+        <h4>🔍 Query Generator Agent</h4>
+        <p><strong>Role:</strong> Converts your natural language questions into database queries and detects your business goal</p>
+        <ul>
+          <li>Identifies if you're optimizing for awareness, engagement, or conversions</li>
+          <li>Generates SQL queries for the video_ad_performance database</li>
+          <li>Maintains context from previous questions in your conversation</li>
+          <li>Recognizes follow-up questions using pronouns like "there", "it", or "that"</li>
+        </ul>
+      </div>
+
+      <div class="agent-box">
+        <h4>💬 Answer Generator Agent</h4>
+        <p><strong>Role:</strong> Transforms data results into clear insights and strategic recommendations</p>
+        <ul>
+          <li>Adapts responses based on your detected goal (awareness, engagement, conversions)</li>
+          <li>Provides budget allocation recommendations</li>
+          <li>Formats answers with bold numbers and clear structure</li>
+          <li>Creates visualizations to support insights</li>
+        </ul>
+      </div>
 
       <!-- What You Can Do -->
       <h2>What You Can Do</h2>
@@ -116,6 +163,43 @@
         <li><strong>Gender:</strong> Male, Female, Unknown</li>
       </ul>
 
+      <!-- Goal-Based Questions -->
+      <h2>Goal-Based Analysis</h2>
+      
+      <p>AdAgentOS automatically detects what you're trying to achieve and adapts its analysis:</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+        <div class="example-box">
+          <h4 class="font-semibold mb-2 text-blue-600">🎯 Awareness Goals</h4>
+          <p class="text-sm mb-2">Maximize reach and visibility</p>
+          <ul class="text-sm">
+            <li>Impressions</li>
+            <li>CPM (Cost Per 1000)</li>
+            <li>Total Reach</li>
+          </ul>
+        </div>
+        
+        <div class="example-box">
+          <h4 class="font-semibold mb-2 text-green-600">📈 Engagement Goals</h4>
+          <p class="text-sm mb-2">Drive traffic and interactions</p>
+          <ul class="text-sm">
+            <li>Click-Through Rate</li>
+            <li>Total Clicks</li>
+            <li>Video Completion</li>
+          </ul>
+        </div>
+
+        <div class="example-box">
+          <h4 class="font-semibold mb-2 text-purple-600">💰 Conversion Goals</h4>
+          <p class="text-sm mb-2">Maximize sales and ROI</p>
+          <ul class="text-sm">
+            <li>ROAS</li>
+            <li>Revenue</li>
+            <li>CPA</li>
+          </ul>
+        </div>
+      </div>
+
       <!-- Example Questions -->
       <h2>Example Questions to Ask</h2>
       
@@ -141,13 +225,24 @@
         </ul>
       </div>
 
-      <h3>Video Performance Questions</h3>
+      <h3>Goal-Specific Questions</h3>
       <div class="example-box">
         <p><strong>Try these:</strong></p>
         <ul>
-          <li>"Which platform has the highest video completion rate?"</li>
-          <li>"Show me the video engagement funnel"</li>
-          <li>"Compare video performance across age groups"</li>
+          <li>"How can I increase brand awareness?" <span class="text-gray-500">(focuses on impressions/CPM)</span></li>
+          <li>"How can I get more website traffic?" <span class="text-gray-500">(focuses on CTR/clicks)</span></li>
+          <li>"How can I maximize sales?" <span class="text-gray-500">(focuses on ROAS/revenue)</span></li>
+          <li>"I have $50k for awareness campaigns" <span class="text-gray-500">(allocates by CPM efficiency)</span></li>
+        </ul>
+      </div>
+
+      <h3>Follow-up Questions</h3>
+      <div class="example-box">
+        <p><strong>The system remembers context:</strong></p>
+        <ul>
+          <li>First: "Which platform has the best CTR?"</li>
+          <li>Then: "How much am I spending there?" <span class="text-gray-500">(knows you mean the best CTR platform)</span></li>
+          <li>Or: "Should I increase budget there?" <span class="text-gray-500">(maintains engagement goal context)</span></li>
         </ul>
       </div>
 
@@ -161,6 +256,13 @@
         <li>How much revenue you get for every dollar spent</li>
         <li>Example: 5x ROAS = $5 revenue for every $1 spent</li>
         <li><span class="highlight">Higher is better</span></li>
+      </ul>
+
+      <p><strong>CPM (Cost Per Thousand Impressions)</strong></p>
+      <ul>
+        <li>How much it costs to reach 1,000 people</li>
+        <li>Example: $0.50 CPM = 50 cents per 1,000 views</li>
+        <li><span class="highlight">Lower is better for awareness</span></li>
       </ul>
 
       <p><strong>CPA (Cost Per Acquisition)</strong></p>
@@ -184,31 +286,6 @@
         <li><span class="highlight">Higher is better</span></li>
       </ul>
 
-      <!-- Platform Insights -->
-      <h2>What We Track for Each Platform</h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div class="example-box">
-          <h4 class="font-semibold mb-2">Financial Metrics</h4>
-          <ul class="text-sm">
-            <li>Ad Spend</li>
-            <li>Revenue Generated</li>
-            <li>Return on Ad Spend (ROAS)</li>
-            <li>Cost Per Acquisition (CPA)</li>
-          </ul>
-        </div>
-        
-        <div class="example-box">
-          <h4 class="font-semibold mb-2">Engagement Metrics</h4>
-          <ul class="text-sm">
-            <li>Impressions</li>
-            <li>Clicks & CTR</li>
-            <li>Conversions</li>
-            <li>Video Views & Completion</li>
-          </ul>
-        </div>
-      </div>
-
       <!-- How Recommendations Work -->
       <h2>How Budget Recommendations Work</h2>
       
@@ -223,7 +300,7 @@
       <h3>When Cutting Budget</h3>
       <p>We protect your best performers:</p>
       <ul>
-        <li>Remove budget from lowest ROAS segments first</li>
+        <li>Remove budget from lowest performing segments first</li>
         <li>Never cut from profitable segments</li>
         <li>Show exact impact on revenue before you decide</li>
       </ul>
@@ -233,19 +310,63 @@
       <ul>
         <li>Move 30-40% from worst to best performers</li>
         <li>Keep total budget the same</li>
-        <li>Maximize overall ROAS</li>
+        <li>Maximize overall performance based on your goal</li>
       </ul>
+
+      <!-- Agent Prompts -->
+      <h2>Technical Details: Agent Prompts</h2>
+      
+      <p>For developers and advanced users, here's how our agents are configured:</p>
+
+      <h3>Query Generator Prompt Structure</h3>
+      <div class="code-box">
+        <pre>STEP 1: Identify business goal
+- AWARENESS: impressions, reach, visibility, CPM, brand
+- ENGAGEMENT: clicks, CTR, traffic, visitors, interactions
+- CONVERSION: sales, revenue, ROAS, ROI, profit, CPA
+
+FOLLOW-UP DETECTION:
+- Pronouns: "there", "it", "that", "those"
+- References: "the best one", "the top performer"
+- Continuations: "which one", "what about the other"
+
+STEP 2: Generate SQL query
+- SELECT only from video_ad_performance
+- WHERE report_month = '2025-10-01'
+- GROUP BY dimension when comparing
+- Calculate appropriate metrics for goal</pre>
+      </div>
+
+      <h3>Answer Generator Prompt Structure</h3>
+      <div class="code-box">
+        <pre>Goal-based metric prioritization:
+- AWARENESS: Lead with impressions and CPM
+- ENGAGEMENT: Lead with CTR and clicks
+- CONVERSION: Lead with ROAS and revenue
+
+Formatting rules:
+- Bold numbers: **$75,000**, **5x**, **2.5%**
+- Bold platforms: **TikTok**, **Instagram**
+- Use → arrows for lists
+- No markdown tables
+
+Strategy instructions:
+- Budget ADD: Allocate by performance tiers
+- Budget CUT: Remove from worst performers
+- REALLOCATE: Move 30-40% to optimize</pre>
+      </div>
 
       <!-- Tips -->
       <h2>Pro Tips</h2>
       
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 my-6">
-        <h3 class="text-blue-900 mb-2">💡 Getting Started</h3>
+        <h3 class="text-blue-900 mb-2">💡 Getting the Most from AdAgentOS</h3>
         <ul class="text-blue-800 text-sm">
-          <li>Start with "Which platform has the best ROAS?" to understand your winners</li>
-          <li>Then ask "Where should I invest more budget?" for growth opportunities</li>
-          <li>Use "Compare [Platform A] and [Platform B]" for detailed analysis</li>
-          <li>Ask follow-up questions - the AI remembers your conversation!</li>
+          <li><strong>State your goal:</strong> Say "for awareness" or "to drive traffic" for goal-specific analysis</li>
+          <li><strong>Use follow-ups:</strong> Ask "What about there?" or "How much for that?" - the AI remembers context</li>
+          <li><strong>Be specific with budgets:</strong> Say "I have $100k to invest" or "I need to cut $50k"</li>
+          <li><strong>Compare directly:</strong> Ask "Compare Platform A vs Platform B" for detailed analysis</li>
+          <li><strong>Check your assumptions:</strong> Ask "Should I move budget from X to Y?" before making changes</li>
         </ul>
       </div>
 
@@ -258,12 +379,32 @@
         <li><strong>Platforms:</strong> All 5 major platforms</li>
         <li><strong>Segments:</strong> 360 unique combinations of region, age, and gender</li>
         <li><strong>Metrics:</strong> 10+ performance indicators per segment</li>
+        <li><strong>Conversation Memory:</strong> Last 10 messages for context</li>
       </ul>
+
+      <!-- Troubleshooting -->
+      <h2>Troubleshooting</h2>
+      
+      <div class="example-box">
+        <p><strong>System defaults to ROAS analysis?</strong></p>
+        <ul class="text-sm">
+          <li>Be explicit about your goal: "for brand awareness" or "to increase traffic"</li>
+          <li>Use goal-specific keywords: awareness, traffic, conversions</li>
+        </ul>
+      </div>
+
+      <div class="example-box">
+        <p><strong>Follow-up questions not maintaining context?</strong></p>
+        <ul class="text-sm">
+          <li>Use clear pronouns: "there", "that platform", "the best one"</li>
+          <li>Reference the previous answer: "You mentioned TikTok..."</li>
+        </ul>
+      </div>
 
       <!-- Contact -->
       <div class="mt-12 pt-8 border-t border-gray-200">
         <p class="text-sm text-gray-600">
-          Need help? Click the Agent Config button to customize how the AI responds to your questions.
+          <strong>Version:</strong> AdAgentOS 1.0 | <strong>Model:</strong> GPT-4o-mini | <strong>Database:</strong> video_ad_performance (October 2025)
         </p>
       </div>
 
