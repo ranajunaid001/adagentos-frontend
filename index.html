@@ -722,7 +722,8 @@ function DynamicVisualization({ visualization }) {
                     role: 'assistant', 
                     content: data.answer || 'No response received',
                     sql: data.sql,
-                    visualization: data.visualization
+                    visualization: data.visualization,
+                    goal: data.goal 
                   }]);
                   setIsLoading(false);
                 }, 800);
@@ -735,7 +736,8 @@ function DynamicVisualization({ visualization }) {
               role: 'assistant', 
               content: data.answer || 'No response received',
               sql: data.sql,
-              visualization: data.visualization
+              visualization: data.visualization,
+              goal: data.goal 
             }]);
             setIsLoading(false);
           }
