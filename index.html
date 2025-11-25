@@ -683,8 +683,8 @@ function DynamicVisualization({ visualization }) {
             role: msg.role,
             content: msg.content // Just the text, no SQL or visualizations
           }));
-        
-        // Start generic thinking message progression
+          
+        // Start thinking message progression
         const thinkingStages = getThinkingMessages(userMessage);
         let stageIndex = 0;
         setThinkingMessage(thinkingStages[0]);
@@ -694,7 +694,7 @@ function DynamicVisualization({ visualization }) {
           if (stageIndex < thinkingStages.length) {
             setThinkingMessage(thinkingStages[stageIndex]);
           }
-        }, 1200); // Change message every 1.2 seconds
+        }, 1200);
         
         try {
           const response = await fetch('https://adagentos-backend-production.up.railway.app/chat', {
@@ -708,24 +708,23 @@ function DynamicVisualization({ visualization }) {
           
           const data = await response.json();
           
-          // Clear the generic interval immediately
+          console.log('Analysis steps:', data.analysisSteps);
+          
+          // Clear the generic interval
           clearInterval(interval);
           
           // Show dynamic analysis steps if available
           if (data.analysisSteps && data.analysisSteps.length > 0) {
-            let dynamicStepIndex = 0;
-            
-            // Show first step immediately
+            let stepIndex = 0;
             setThinkingMessage(data.analysisSteps[0]);
             
-            // Show remaining steps with interval
-            const dynamicInterval = setInterval(() => {
-              dynamicStepIndex++;
-              if (dynamicStepIndex < data.analysisSteps.length) {
-                setThinkingMessage(data.analysisSteps[dynamicStepIndex]);
+            const stepInterval = setInterval(() => {
+              stepIndex++;
+              if (stepIndex < data.analysisSteps.length) {
+                setThinkingMessage(data.analysisSteps[stepIndex]);
               } else {
-                clearInterval(dynamicInterval);
-                // Wait a bit then show the answer
+                clearInterval(stepInterval);
+                // Now show the answer after dynamic steps are done
                 setTimeout(() => {
                   setThinkingMessage('');
                   setMessages(prev => [...prev, { 
