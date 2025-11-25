@@ -683,18 +683,18 @@ function DynamicVisualization({ visualization }) {
             role: msg.role,
             content: msg.content // Just the text, no SQL or visualizations
           }));
-          
-        // Start thinking message progression
+        
+        // Start generic thinking message progression
         const thinkingStages = getThinkingMessages(userMessage);
         let stageIndex = 0;
         setThinkingMessage(thinkingStages[0]);
         
-        const interval = setInterval(() => {
+        let interval = setInterval(() => {
           stageIndex++;
           if (stageIndex < thinkingStages.length) {
             setThinkingMessage(thinkingStages[stageIndex]);
           }
-        }, 1200);
+        }, 1200); // Change message every 1.2 seconds
         
         try {
           const response = await fetch('https://adagentos-backend-production.up.railway.app/chat', {
@@ -708,39 +708,56 @@ function DynamicVisualization({ visualization }) {
           
           const data = await response.json();
           
-          console.log('Analysis steps:', data.analysisSteps);
-          // NEW: Show dynamic analysis steps if available
-            if (data.analysisSteps && data.analysisSteps.length > 0) {
-              let stepIndex = 0;
-              const stepInterval = setInterval(() => {
-                if (stepIndex < data.analysisSteps.length) {
-                  setThinkingMessage(data.analysisSteps[stepIndex]);
-                  stepIndex++;
-                } else {
-                  clearInterval(stepInterval);
-                  // Clear thinking message after a short delay
-                  setTimeout(() => {
-                    setThinkingMessage('');
-                  }, 800);
-                }
-              }, 1200); // Show each step for 1.2 seconds
-            }
+          // Clear the generic interval immediately
+          clearInterval(interval);
           
-          setMessages(prev => [...prev, { 
-            role: 'assistant', 
-            content: data.answer || 'No response received',
-            sql: data.sql,
-            visualization: data.visualization
-          }]);
+          // Show dynamic analysis steps if available
+          if (data.analysisSteps && data.analysisSteps.length > 0) {
+            let dynamicStepIndex = 0;
+            
+            // Show first step immediately
+            setThinkingMessage(data.analysisSteps[0]);
+            
+            // Show remaining steps with interval
+            const dynamicInterval = setInterval(() => {
+              dynamicStepIndex++;
+              if (dynamicStepIndex < data.analysisSteps.length) {
+                setThinkingMessage(data.analysisSteps[dynamicStepIndex]);
+              } else {
+                clearInterval(dynamicInterval);
+                // Wait a bit then show the answer
+                setTimeout(() => {
+                  setThinkingMessage('');
+                  setMessages(prev => [...prev, { 
+                    role: 'assistant', 
+                    content: data.answer || 'No response received',
+                    sql: data.sql,
+                    visualization: data.visualization
+                  }]);
+                  setIsLoading(false);
+                }, 800);
+              }
+            }, 1200);
+          } else {
+            // No dynamic steps, show answer immediately
+            setThinkingMessage('');
+            setMessages(prev => [...prev, { 
+              role: 'assistant', 
+              content: data.answer || 'No response received',
+              sql: data.sql,
+              visualization: data.visualization
+            }]);
+            setIsLoading(false);
+          }
+          
         } catch (error) {
           console.error('Error:', error);
+          clearInterval(interval);
+          setThinkingMessage('');
           setMessages(prev => [...prev, { 
             role: 'assistant', 
             content: 'Error connecting to backend. Please check console.' 
           }]);
-        } finally {
-          clearInterval(interval);
-          setThinkingMessage('');
           setIsLoading(false);
         }
       };
