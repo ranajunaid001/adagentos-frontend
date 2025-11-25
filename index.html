@@ -707,6 +707,7 @@ function DynamicVisualization({ visualization }) {
           });
           
           const data = await response.json();
+          console.log('Analysis steps:', data.analysisSteps);
           setMessages(prev => [...prev, { 
             role: 'assistant', 
             content: data.answer || 'No response received',
