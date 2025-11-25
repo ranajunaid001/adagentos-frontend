@@ -145,9 +145,10 @@ function DynamicVisualization({ visualization }) {
   const items = Object.keys(data);
   const primaryMetric = requestedMetrics[0];
   
-  // Capitalize dimension name
+  // FIX: Handle null dimension safely
   const dimensionLabel = dimension === 'age_group' ? 'Age Group' : 
-                       dimension.charAt(0).toUpperCase() + dimension.slice(1);
+                       dimension === 'gender' ? 'Gender' :
+                       dimension ? dimension.charAt(0).toUpperCase() + dimension.slice(1) : 'Category';
 
   // Platform colors
   const platformColors = {
