@@ -295,6 +295,7 @@ function DynamicVisualization({ visualization }) {
 
   // COMPREHENSIVE COMPARISON VISUALIZATION
   if (primaryMetric === 'comprehensive') {
+    console.log('RENDERING COMPREHENSIVE VISUALIZATION!');
     // Get all metrics for comprehensive view
     const totalSpend = Object.values(data).reduce((sum, d) => sum + (d.spend || 0), 0);
     const totalRevenue = Object.values(data).reduce((sum, d) => sum + (d.revenue || 0), 0);
