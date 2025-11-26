@@ -251,6 +251,7 @@ function DynamicVisualization({ visualization }) {
   }
 
   const { dimension, data, requestedMetrics = ['financial'], goal } = visualization;
+  console.log('After destructuring - requestedMetrics:', requestedMetrics);
     // Override metrics based on goal
   // Override metrics based on goal ONLY if not comprehensive
   let metricsToShow = requestedMetrics;
@@ -264,6 +265,8 @@ function DynamicVisualization({ visualization }) {
     }
   }
   const primaryMetric = metricsToShow[0];
+  console.log('primaryMetric is:', primaryMetric);
+  console.log('=== DynamicVisualization END ===');
   
   const items = Object.keys(data);
   
