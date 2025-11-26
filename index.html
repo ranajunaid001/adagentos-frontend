@@ -139,6 +139,11 @@
     }
 
 function DynamicVisualization({ visualization }) {
+    // ADD THESE CONSOLE LOGS HERE - RIGHT AT THE START
+  console.log('=== DynamicVisualization START ===');
+  console.log('Full visualization:', visualization);
+  console.log('requestedMetrics:', visualization?.requestedMetrics);
+  
   if (!visualization) return null;
   
   // DEEP DIVE VISUALIZATION
