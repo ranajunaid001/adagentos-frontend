@@ -247,13 +247,16 @@ function DynamicVisualization({ visualization }) {
 
   const { dimension, data, requestedMetrics = ['financial'], goal } = visualization;
     // Override metrics based on goal
+  // Override metrics based on goal ONLY if not comprehensive
   let metricsToShow = requestedMetrics;
-  if (goal === 'AWARENESS') {
-    metricsToShow = ['impressions', 'cpm'];
-  } else if (goal === 'ENGAGEMENT') {
-    metricsToShow = ['ctr'];
-  } else if (goal === 'CONVERSION') {
-    metricsToShow = ['financial'];
+  if (requestedMetrics[0] !== 'comprehensive') {
+    if (goal === 'AWARENESS') {
+      metricsToShow = ['impressions', 'cpm'];
+    } else if (goal === 'ENGAGEMENT') {
+      metricsToShow = ['ctr'];
+    } else if (goal === 'CONVERSION') {
+      metricsToShow = ['financial'];
+    }
   }
   const primaryMetric = metricsToShow[0];
   
