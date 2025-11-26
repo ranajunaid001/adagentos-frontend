@@ -1297,17 +1297,17 @@ function DynamicVisualization({ visualization }) {
       };
 
       return React.createElement('div', { className: 'flex h-screen bg-white' },
-          // Add config and docs buttons in top right
+        // Add config and docs buttons in top right
         React.createElement('div', { 
           style: { position: 'absolute', top: '20px', right: '20px', zIndex: 10 } 
         },
           React.createElement('button', {
             onClick: () => window.location.href = 'docs.html',
-            className: 'px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors'
-          }, 'Docs'),            
-           React.createElement('button', {
+            className: 'px-5 py-2.5 bg-gray-100 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors shadow-sm'
+          }, 'Docs'),
+          React.createElement('button', {
             onClick: () => window.location.href = 'prompts.html',
-            className: 'px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors ml-2'
+            className: 'px-5 py-2.5 bg-gray-100 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors ml-2 shadow-sm'
           }, 'Prompts')                 
         ),
         
