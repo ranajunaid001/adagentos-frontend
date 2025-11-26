@@ -1304,7 +1304,11 @@ function DynamicVisualization({ visualization }) {
           React.createElement('button', {
             onClick: () => window.location.href = 'docs.html',
             className: 'px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors'
-          }, 'Docs')
+          }, 'Docs'),            
+           React.createElement('button', {
+            onClick: () => window.location.href = 'prompts.html',
+            className: 'px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors ml-2'
+          }, 'Prompts')                 
         ),
         
         // Password Modal
