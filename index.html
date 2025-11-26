@@ -87,11 +87,31 @@
     // Welcome State Component
     function WelcomeState({ onExampleClick }) {
       const examples = [
-        { icon: '📊', title: 'Analyze Performance', desc: 'ROAS, conversions, revenue metrics', question: 'Which platform has the best ROAS?' },
-        { icon: '💰', title: 'Budget Strategy', desc: 'Optimize spend allocation', question: 'Where should I invest more budget?' },
-        { icon: '📹', title: 'Video Metrics', desc: 'Completion rates, engagement', question: 'Show me video completion rates by platform' },
-        { icon: '🎯', title: 'Compare Segments', desc: 'Platforms, regions, demographics', question: 'Compare performance across all regions' }
-      ];
+  { 
+    icon: '📊', 
+    title: 'Platform Analysis', 
+    desc: 'Compare platform performance', 
+    question: 'Compare all platforms by CTR' 
+  },
+  { 
+    icon: '🗺️', 
+    title: 'Regional Insights', 
+    desc: 'Geographic performance', 
+    question: 'Which region has the highest ROAS?' 
+  },
+  { 
+    icon: '📋', 
+    title: 'Executive Summary', 
+    desc: 'Strategic dashboard view', 
+    question: 'Executive summary for Facebook' 
+  },
+  { 
+    icon: '💰', 
+    title: 'Budget Optimization', 
+    desc: 'Strategic spend decisions', 
+    question: 'I need to cut $50k from my budget, where should I reduce?' 
+  }
+];
 
       return React.createElement('div', { className: 'flex-1 flex items-center justify-center p-8 fade-in' },
         React.createElement('div', { className: 'max-w-2xl w-full text-center' },
