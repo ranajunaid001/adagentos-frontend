@@ -140,6 +140,20 @@
 
 function DynamicVisualization({ visualization }) {
   if (!visualization) return null;
+  
+  / DEEP DIVE VISUALIZATION - ADD THIS NEW SECTION HERE
+  if (visualization.type === 'deep_dive') {
+    const platform = visualization.platform;
+    const metrics = visualization.data;
+    
+    return React.createElement('div', { className: 'mt-4 space-y-6' },
+      React.createElement('h2', { className: 'text-xl font-semibold mb-4' }, 
+        `${platform} Performance Dashboard`
+      ),
+      React.createElement('p', null, 'ROAS: ' + (metrics.roas || 0) + 'x')
+      // Add rest of deep dive visualization here
+    );
+  }
 
   const { dimension, data, requestedMetrics = ['financial'], goal } = visualization;
 
