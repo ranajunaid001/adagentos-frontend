@@ -250,50 +250,7 @@ function DynamicVisualization({ visualization }) {
     );
   }
 
-  const { dimension, data, requestedMetrics = ['financial'], goal } = visualization;
-  console.log('After destructuring - requestedMetrics:', requestedMetrics);
-    // Override metrics based on goal
-  // Override metrics based on goal ONLY if not comprehensive
-  let metricsToShow = requestedMetrics;
-  if (requestedMetrics[0] !== 'comprehensive') {
-    if (goal === 'AWARENESS') {
-      metricsToShow = ['impressions', 'cpm'];
-    } else if (goal === 'ENGAGEMENT') {
-      metricsToShow = ['ctr'];
-    } else if (goal === 'CONVERSION') {
-      metricsToShow = ['financial'];
-    }
-  }
-  const primaryMetric = metricsToShow[0];
-  console.log('primaryMetric is:', primaryMetric);
-  console.log('=== DynamicVisualization END ===');
-  
-  const items = Object.keys(data);
-  
-  // FIX: Handle null dimension safely
-  const dimensionLabel = dimension === 'age_group' ? 'Age Group' : 
-                       dimension === 'gender' ? 'Gender' :
-                       dimension ? dimension.charAt(0).toUpperCase() + dimension.slice(1) : 'Category';
-
-  // Platform colors
-  const platformColors = {
-    TikTok: { bg: '#000000', text: '#FFFFFF' },
-    Instagram: { bg: '#E4405F', text: '#FFFFFF' },
-    Facebook: { bg: '#1877F2', text: '#FFFFFF' },
-    YouTube: { bg: '#FF0000', text: '#FFFFFF' },
-    Snapchat: { bg: '#FFFC00', text: '#000000' }
-  };
-
-  const getColor = (item) => {
-    if (dimension === 'platform' && platformColors[item]) {
-      return platformColors[item];
-    }
-    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-    const index = items.indexOf(item) % colors.length;
-    return { bg: colors[index], text: '#FFFFFF' };
-  };
-
-    // EXECUTIVE SUMMARY VISUALIZATION
+      // EXECUTIVE SUMMARY VISUALIZATION
   if (visualization.type === 'executive_summary') {
     const platform = visualization.platform;
     const metrics = visualization.data;
@@ -478,6 +435,51 @@ function DynamicVisualization({ visualization }) {
       )
     );
   }
+
+  const { dimension, data, requestedMetrics = ['financial'], goal } = visualization;
+  console.log('After destructuring - requestedMetrics:', requestedMetrics);
+    // Override metrics based on goal
+  // Override metrics based on goal ONLY if not comprehensive
+  let metricsToShow = requestedMetrics;
+  if (requestedMetrics[0] !== 'comprehensive') {
+    if (goal === 'AWARENESS') {
+      metricsToShow = ['impressions', 'cpm'];
+    } else if (goal === 'ENGAGEMENT') {
+      metricsToShow = ['ctr'];
+    } else if (goal === 'CONVERSION') {
+      metricsToShow = ['financial'];
+    }
+  }
+  const primaryMetric = metricsToShow[0];
+  console.log('primaryMetric is:', primaryMetric);
+  console.log('=== DynamicVisualization END ===');
+  
+  const items = Object.keys(data);
+  
+  // FIX: Handle null dimension safely
+  const dimensionLabel = dimension === 'age_group' ? 'Age Group' : 
+                       dimension === 'gender' ? 'Gender' :
+                       dimension ? dimension.charAt(0).toUpperCase() + dimension.slice(1) : 'Category';
+
+  // Platform colors
+  const platformColors = {
+    TikTok: { bg: '#000000', text: '#FFFFFF' },
+    Instagram: { bg: '#E4405F', text: '#FFFFFF' },
+    Facebook: { bg: '#1877F2', text: '#FFFFFF' },
+    YouTube: { bg: '#FF0000', text: '#FFFFFF' },
+    Snapchat: { bg: '#FFFC00', text: '#000000' }
+  };
+
+  const getColor = (item) => {
+    if (dimension === 'platform' && platformColors[item]) {
+      return platformColors[item];
+    }
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+    const index = items.indexOf(item) % colors.length;
+    return { bg: colors[index], text: '#FFFFFF' };
+  };
+
+
   // COMPREHENSIVE COMPARISON VISUALIZATION
   if (primaryMetric === 'comprehensive') {
     console.log('RENDERING COMPREHENSIVE VISUALIZATION!');
